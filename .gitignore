@@ -1,0 +1,17 @@
+# ide
+.idea
+.vscode
+
+# private data
+.env.yml
+.env.temp.yml
+device.json
+session.token
+
+# run data
+.koishi
+data
+logs
+**/node_modules
+*.lock
+*.log

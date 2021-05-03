@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "strict": true,
+    "strictNullChecks": false,
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "jsx": "react",
+    "types": [ "node", "mocha" ],
+    "paths": {
+      "@/*": [ "src/*" ],
+      "koishi-plugin-*": [ "src/plugin-*" ]
+    },
+    "lib": [
+      "esnext", "dom"
+    ]
+  },
+  "include": [
+    "cli/**/*.ts",
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

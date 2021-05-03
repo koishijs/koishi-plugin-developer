@@ -1,0 +1,28 @@
+{
+  "name": "koishi-plugin-developer",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "go-cqhttp:win-amd": "ts-node ./cli/run-gocq.ts -e windows-amd",
+    "start:dev": "nodemon --exec yarn start:pro",
+    "start:pro": "ts-node -r tsconfig-paths/register ./src/index.ts"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "koishi": "^3.10.1",
+    "koishi-adapter-onebot": "^3.0.8",
+    "tslib": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^7.3.1",
+    "@types/js-yaml": "^4.0.1",
+    "@types/node": "^15.0.1",
+    "commander": "^7.2.0",
+    "inquirer": "^8.0.0",
+    "nodemon": "^2.0.7",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.2.4"
+  }
+}
