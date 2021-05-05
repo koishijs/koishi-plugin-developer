@@ -5,9 +5,13 @@ import fs from 'fs'
 import path from 'path'
 
 interface YamlConfig {
+  account: {
+    uin: string
+    pwd: string
+  }
   default: {
     account: {
-      uin: number
+      uin: string
       pwd: string
     }
     server: {
@@ -60,7 +64,7 @@ export const appOptions: AppOptions = {
   bots: [{
     type: 'onebot:ws',
     server: `ws://${curServer.host}:${curServer.port}`,
-    selfId: ''+yamlConfig.default.account.uin,
+    selfId: yamlConfig.account.uin,
     token: yamlConfig.middlewares['access-token']
   }]
 }
