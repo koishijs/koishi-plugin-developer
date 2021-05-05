@@ -24,8 +24,8 @@
   "dependencies": {
     "js-yaml": "^4.1.0",
     "koishi": "^3.10.2",
-    "koishi-utils": "^4.2.2",
     "koishi-adapter-onebot": "^3.0.8",
+    "koishi-utils": "^4.2.2",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
@@ -39,6 +39,7 @@
     "chai-as-promised": "^7.1.1",
     "commander": "^7.2.0",
     "inquirer": "^8.0.0",
+    "koishi-test-utils": "^6.0.0-beta.12",
     "mocha": "^8.3.2",
     "nodemon": "^2.0.7",
     "ts-node": "^9.1.1",
