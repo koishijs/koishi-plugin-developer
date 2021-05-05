@@ -17,7 +17,7 @@
     "types": [ "node", "mocha" ],
     "paths": {
       "@/*": [ "src/*" ],
-      "koishi-plugin-*": [ "src/plugin-*" ]
+      "koishi-plugin-*": [ "packages/plugin-*/src" ]
     },
     "lib": [
       "esnext", "dom"
