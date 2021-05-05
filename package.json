@@ -24,6 +24,7 @@
   "dependencies": {
     "js-yaml": "^4.1.0",
     "koishi": "^3.10.2",
+    "koishi-utils": "^4.2.2",
     "koishi-adapter-onebot": "^3.0.8",
     "tslib": "^2.2.0"
   },
