@@ -20,9 +20,9 @@ interface Config { }
 const defaultConfig: Config = {
 }
 
-export const apply = (ctx: Context, config: Config = {}) => {
+export const apply = (ctx: Context, _config: Config = {}) => {
   const logger = ctx.logger(`koishi-plugin-${name}`)
-  config = merge(config, defaultConfig)
+  _config = merge(_config, defaultConfig)
 
   ctx.on('message', async session => {
     logger.info(`接受到 message: '${session.content}'`)
