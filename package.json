@@ -1,25 +1,44 @@
 {
+  "private": true,
   "name": "koishi-plugin-developer",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "license": "MIT",
+  "author": "yijie4188 <yijie4188@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NWYLZW/koishi-plugin-developer.git"
+  },
+  "homepage": "https://github.com/NWYLZW/koishi-plugin-developer#readme",
   "scripts": {
     "go-cqhttp:win-amd": "ts-node ./cli/run-gocq.ts -e windows-amd",
     "start:dev": "nodemon --exec yarn start:pro",
     "start:pro": "ts-node -r tsconfig-paths/register ./src/index.ts"
   },
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=10.0.0"
+  },
   "dependencies": {
     "js-yaml": "^4.1.0",
-    "koishi": "^3.10.1",
+    "koishi": "^3.10.2",
     "koishi-adapter-onebot": "^3.0.8",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.17",
+    "@types/chai-as-promised": "^7.1.3",
     "@types/inquirer": "^7.3.1",
     "@types/js-yaml": "^4.0.1",
+    "@types/mocha": "^8.2.2",
     "@types/node": "^15.0.1",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
     "commander": "^7.2.0",
     "inquirer": "^8.0.0",
+    "mocha": "^8.3.2",
     "nodemon": "^2.0.7",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
