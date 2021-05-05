@@ -11,7 +11,7 @@ app.plugin(demo, {})
 describe('Demo Plugin', () => {
   // 基础性功能测试
   describe('Basic', () => {
-    // 注入用户数据
+    // 向 mock 数据库注入用户数据
     before(async () => {
       await app.database.initUser('001', 4)
     })
