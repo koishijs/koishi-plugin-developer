@@ -2,6 +2,9 @@
 .idea
 .vscode
 
+# build data
+**/dist
+
 # private data
 .env.yml
 .env.temp.yml

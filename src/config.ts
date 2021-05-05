@@ -39,7 +39,7 @@ interface YamlConfig {
 const filePath = new Proxy({
   envTemp: './.env.temp.yml'
 }, {
-  get(target, p, receiver) {
+  get(target, p, _receiver) {
     return path.resolve(
       process.cwd(), target[p]
     )
