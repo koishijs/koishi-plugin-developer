@@ -15,6 +15,7 @@
     "start:dev": "nodemon --exec yarn start:pro",
     "start:pro": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "clear": "rimraf ./packages/plugin-*/dist",
+    "helper:plugin": "ts-node ./cli/plugin-helper.ts",
     "build": "ts-node ./cli/builder.ts",
     "build:plugins": "yarn build --clear --all",
     "build:plugin": "yarn build --clear --all-format",
