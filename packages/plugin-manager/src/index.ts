@@ -1,4 +1,4 @@
-import { Context } from 'koishi-core'
+import { Context, Plugin } from 'koishi-core'
 import { merge } from 'koishi-utils'
 
 import './core/Context'
@@ -23,8 +23,21 @@ interface Config { }
 const defaultConfig: Config = {
 }
 
+const searchPlugin = (plugin: string): {
+  pluginName: string
+  pluginModule: Plugin
+} | null => {
+  const pluginName = plugin
+  try {
+    return { pluginName, pluginModule: require(pluginName) }
+  } catch (e) {
+    if (/^koishi-plugin-.*$/.test(pluginName)) return null
+    return searchPlugin('koishi-plugin-' + pluginName)
+  }
+}
+
 export const apply = (ctx: Context, _config: Config = {}) => {
-  const logger = ctx.logger(`koishi-plugin-${name}`)
+  const _logger = ctx.logger(`koishi-plugin-${name}`)
   _config = merge(_config, defaultConfig)
 
   const kpmCmd = ctx.command(
@@ -35,19 +48,39 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     .alias('kpm.i')
     .action(async ({ session }, ...plugins) => {
       for (let i = 0; i < plugins.length; i++) {
-        const plugin = ''+plugins[i]
-        ctx.plugin(require(plugin))
-        await session.send('plugin installed')
+        const data = searchPlugin('' + plugins[i])
+
+        if (data !== null) {
+          const ctxPlugins = allPlugins.get(ctx) || []
+          const isInstalled = ctxPlugins
+            .filter(ctxPluginData => ctxPluginData.plugin === data.pluginModule)
+            .length >= 1
+          !isInstalled && ctx.plugin(data.pluginModule)
+          await session.send(`installed ${data.pluginName}`)
+        } else {
+          await session.send(`${data.pluginName} 未安装在本地`)
+        }
       }
+      return '安装完成'
     })
 
   kpmCmd.subcommand('.list')
     .alias('kpm.ls')
-    .action(({ session }) => {
+    .option('global', '-g 全局', { type: "boolean" })
+    .action(({ session, options }) => {
       let pluginsList = ''
-      allPlugins.forEach((value, key, map) => {
-        pluginsList += ('[x] ' + value.plugin?.name || '未命名插件') + '\n'
+      if (options.global) { ctx = ctx.app }
+      const ctxPlugins = allPlugins.get(ctx) || []
+      ctxPlugins.forEach(ctxPluginData => {
+        let name = ''
+        const plugin = ctxPluginData.plugin
+        if (plugin?.name && plugin?.apply) {
+          name = plugin.name
+        } else {
+          name = '未命名插件'
+        }
+        pluginsList += `[√] ${name}\n`
       })
-      return pluginsList
+      return pluginsList === '' ? '暂无已安装的插件' : pluginsList
     })
 }
