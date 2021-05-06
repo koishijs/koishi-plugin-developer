@@ -1,23 +1,24 @@
 import fs from 'fs'
-import path from 'path'
 import yaml from 'js-yaml'
 import commander from 'commander'
 import { spawn } from 'child_process'
 import { merge } from 'koishi'
 import inquirer from 'inquirer'
 
+import pkg from '../package.json'
+
 const program = new commander.Command()
-program
-  .version('0.0.1')
-  .option(
-    '-e, --env <envName>',
-    'choose your environment.',
-    'windows-amd'
-  ).option(
-    '-c, --config <file>',
-    'select `gocq` configuration file.',
-  'config.yml'
-  ).parse(process.argv)
+program.version(
+  pkg.version
+).option(
+  '-e, --env <envName>',
+  'choose your environment.',
+  'windows-amd'
+).option(
+  '-c, --config <file>',
+  'select `gocq` configuration file.',
+'config.yml'
+).parse(process.argv)
 
 const options = program.opts() as {
   env: string
