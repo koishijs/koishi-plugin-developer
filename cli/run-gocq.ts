@@ -30,7 +30,7 @@ const filePath = new Proxy({
   envConfig: '.env.yml',
   envTempConfig: '.env.temp.yml'
 }, {
-  get(target, p, receiver) {
+  get(target, p, _receiver) {
     return target[p]
     // return path.resolve(
     //   process.cwd(), target[p]
@@ -48,7 +48,7 @@ const filePath = new Proxy({
       const defaultEnvConfig = {
         middlewares: { 'access-token': '74dc0131-0bce-4a39-8ee8-21fea81a892b' },
         account: {
-          uin: undefined, pwd: ''
+          uin: undefined, password: ''
         }
       }
       const answer: {
@@ -73,7 +73,7 @@ const filePath = new Proxy({
         throw new Error('Env Config file can not found, You need to create a `.env.yml` file in the root directory.')
       }
       defaultEnvConfig.account.uin = +answer.uni
-      defaultEnvConfig.account.pwd = answer.pwd
+      defaultEnvConfig.account.password = answer.pwd
       fs.writeFileSync(
         filePath['envConfig'], yaml.dump(defaultEnvConfig)
       )
@@ -99,9 +99,14 @@ const filePath = new Proxy({
   const execCmd = spawn(
     filePath['gocqExe'], args
   )
-  execCmd.stdout.on('data', data => process.stdout.write(data))
-  execCmd.stderr.on('data', data => process.stderr.write(data))
-  process.on('SIGINT', () => {
+  process.stdin.pipe(execCmd.stdin)
+  execCmd.stdout.pipe(process.stdout)
+  execCmd.stderr.pipe(process.stderr)
+  execCmd.on('exit', _code => {
     fs.rmSync(filePath['envTempConfig'])
   })
 })()
+
+process.on('exit', _code => {
+  fs.rmSync(filePath['envTempConfig'])
+})
