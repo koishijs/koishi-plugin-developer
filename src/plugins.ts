@@ -1,8 +1,6 @@
 import { App } from 'koishi'
-import * as demo from 'koishi-plugin-demo'
+import * as manager from 'koishi-plugin-manager'
 
 export const registerPlugins = (app: App) => {
-  app.plugin(
-    demo, {}
-  )
+  app.plugin(manager, {})
 }

@@ -1,0 +1,17 @@
+{
+  "name": "koishi-plugin-manager",
+  "version": "1.0.0",
+  "description": "koishi plugin manager, help you to manager your bot's plugins.",
+  "author": "yijie4188 <yijie4188@gmail.com>",
+  "license": "MIT",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+  },
+  "keywords": [
+    "qqbot", "cqhttp", "coolq",
+    "bot", "chatbot",
+    "koishi", "plugin"
+  ]
+}
