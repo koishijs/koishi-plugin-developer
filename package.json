@@ -14,11 +14,13 @@
     "go-cqhttp:win-amd": "ts-node ./cli/run-gocq.ts -e windows-amd",
     "start:dev": "nodemon --exec yarn start:pro",
     "start:pro": "ts-node -r tsconfig-paths/register ./src/index.ts",
-    "clear": "rimraf packages/plugin-*/dist/*",
-    "build:plugin": "yarn clear && ts-node ./cli/builder.ts all",
-    "build:plugin:esm": "ts-node ./cli/builder.ts --environment FORMAT:esm",
-    "build:plugin:umd": "ts-node ./cli/builder.ts --environment FORMAT:umd",
-    "build:plugin:min": "ts-node ./cli/builder.ts --environment FORMAT:min"
+    "clear": "rimraf ./packages/plugin-*/dist",
+    "build": "ts-node ./cli/builder.ts",
+    "build:plugins": "yarn build --clear --all",
+    "build:plugin": "yarn build --clear --all-format",
+    "build:plugin:esm": "yarn build --format esm",
+    "build:plugin:umd": "yarn build --format umd",
+    "build:plugin:min": "yarn build --format min"
   },
   "workspaces": [
     "packages/*"
