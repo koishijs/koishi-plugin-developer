@@ -32,16 +32,24 @@ yarn go-cqhttp:win-amd
   * 生产环境使用 `yarn start:pro`
   * 开发环境需要热载可以使用 `yarn start:dev`
     
-    * [ ] feat 热插拔的重载插件，减少不需要的插件的反复重启成本
-    * [ ] feat 指令化安装管理插件，不需要代码中控制管理
+    * [ ] feat 热插拔的重载插件 (减少不需要的插件的反复重启成本)
+    * [ ] feat 指令化安装管理插件 (不需要代码中控制管理)
+      * [x] 全局安装插件
+      * [ ] 指定会话(全局、私聊、群聊、群聊下某用户)安装插件
+      * [ ] 远程(github、npm)搜索 koishi 相关 plugin 安装
+      * [ ] 设置指定会话插件配置
+      * [ ] 热重载 监听到指定插件变动的时候，启动热重载
+      * [ ] gui
 
 * 生成构建发布插件
 
   * 生成模版插件(暂时参考 demo 插件，内集成最新 `unit test`)
-    * [ ] feat 待完成 cli 脚本生成模版
-  * 构建指定插件使用 `yarn build:plugin`, 启动成功后输入指定要构建的插件
-    > 例如 `demo`
-  * 发布插件待完成 cli 脚本集成发布
+    * cli 脚本生成模版 `yarn helper:plugin`, 创建一个简单的模版在 packages 文件夹下
+    * 写下你想写出的机器人插件
+    * 在 src 中启用，或者给机器人发送 `kpm.i(nstall) your-plugin-name`，全局启用你的插件
+  * 构建指定插件使用 `yarn build:plugin`, 启动成功后输入指定要构建的插件。
+    例如 `demo`
+  * [ ] feat 待完成 cli 脚本集成发布
 
 ## 目录介绍
 
