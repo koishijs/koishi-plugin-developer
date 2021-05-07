@@ -46,19 +46,25 @@ export const apply = (ctx: Context, _config: Config = {}) => {
 
   kpmCmd.subcommand('.install [...plugins]')
     .alias('kpm.i')
-    .action(async ({ session }, ...plugins) => {
+    .option('global', '-g 全局', { type: "boolean" })
+    .action(async ({ session, options }, ...plugins) => {
+      let sessionCtx = ctx.select(
+        'userId', session.userId
+      )
+      if (options.global) { sessionCtx = ctx.app }
+
       for (let i = 0; i < plugins.length; i++) {
         const data = searchPlugin('' + plugins[i])
 
         if (data !== null) {
-          const ctxPlugins = allPlugins.get(ctx) || []
-          const isInstalled = ctxPlugins
-            .filter(ctxPluginData => ctxPluginData.plugin === data.pluginModule)
-            .length >= 1
-          !isInstalled && ctx.plugin(data.pluginModule)
+          const ctxPlugins = allPlugins.get(sessionCtx)
+          const isInstalled = ctxPlugins && ctxPlugins.filter(
+            ctxPluginData => ctxPluginData.plugin === data.pluginModule
+          ).length >= 1
+          !isInstalled && sessionCtx.plugin(data.pluginModule)
           await session.send(`installed ${data.pluginName}`)
         } else {
-          await session.send(`${data.pluginName} 未安装在本地`)
+          await session.send(`本地未安装 ${data.pluginName}`)
         }
       }
       return '安装完成'
@@ -68,17 +74,18 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     .alias('kpm.ls')
     .option('global', '-g 全局', { type: "boolean" })
     .action(({ session, options }) => {
+      let sessionCtx = ctx.select(
+        'userId', session.userId
+      )
+      if (options.global) { sessionCtx = ctx.app }
+
       let pluginsList = ''
-      if (options.global) { ctx = ctx.app }
-      const ctxPlugins = allPlugins.get(ctx) || []
-      ctxPlugins.forEach(ctxPluginData => {
-        let name = ''
+      const ctxPlugins = allPlugins.get(
+        sessionCtx
+      )
+      ctxPlugins && ctxPlugins.forEach(ctxPluginData => {
         const plugin = ctxPluginData.plugin
-        if (plugin?.name && plugin?.apply) {
-          name = plugin.name
-        } else {
-          name = '未命名插件'
-        }
+        const name = plugin?.name ?? '未命名插件'
         pluginsList += `[√] ${name}\n`
       })
       return pluginsList === '' ? '暂无已安装的插件' : pluginsList
