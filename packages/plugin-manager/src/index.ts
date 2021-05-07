@@ -3,6 +3,7 @@ import { merge } from 'koishi-utils'
 
 import './core/Context'
 import { allPlugins } from './core/Context'
+import { npmApi } from './core/NpmApi'
 
 // 插件名称
 export const name = 'manager'
@@ -46,7 +47,7 @@ export const apply = (ctx: Context, _config: Config = {}) => {
 
   kpmCmd.subcommand('.install [...plugins]')
     .alias('kpm.i')
-    .option('global', '-g 全局', { type: "boolean" })
+    .option('global', '-g 全局', { type: 'boolean' })
     .action(async ({ session, options }, ...plugins) => {
       let sessionCtx = ctx.select(
         'userId', session.userId
@@ -81,8 +82,9 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     })
 
   kpmCmd.subcommand('.uninstall [...plugins]')
-    .alias('kpm.uni')
-    .option('global', '-g 全局', { type: "boolean" })
+    .alias('kpm.uni').alias('kpm.un').alias('kpm.unlink')
+    .alias('kpm.remove').alias('kpm.rm').alias('kpm.r')
+    .option('global', '-g 全局', { type: 'boolean' })
     .action(async ({ session, options }, ...plugins) => {
       let sessionCtx = ctx.select(
         'userId', session.userId
@@ -119,8 +121,18 @@ export const apply = (ctx: Context, _config: Config = {}) => {
 
   kpmCmd.subcommand('.list')
     .alias('kpm.ls')
-    .option('global', '-g 全局', { type: "boolean" })
-    .action(({ session, options }) => {
+    .option('remote', '-r 远程', { type: 'boolean' })
+    .option('global', '-g 全局', { type: 'boolean' })
+    .action(async ({ session, options }) => {
+      if (options.remote) {
+        const pluginsPagination = await npmApi.search('koishi-plugin')
+        let returnMsg = `共检索到: ${ pluginsPagination.total }个插件\n`
+        pluginsPagination.results.forEach(item => {
+          const pkg = item.package
+          returnMsg += `${ pkg.name }[${ pkg.author.name }]-${ pkg.version }\n` + pkg.description + '\n'
+        })
+        return returnMsg
+      }
       let sessionCtx = ctx.select(
         'userId', session.userId
       )
