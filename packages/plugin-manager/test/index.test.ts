@@ -21,7 +21,6 @@ describe('Manager plugin', () => {
   const _superSes002Chanel002 = app.session('002', '002')
 
   describe('list plugins', () => {
-
     it('should have no plugin installed', async () => {
       await superSes001.shouldReply(
         'kpm.ls', '暂无已安装的插件'
@@ -34,6 +33,12 @@ describe('Manager plugin', () => {
     it('should have a manager plugin.', async () => {
       await superSes001.shouldReply(
         'kpm.ls -g', '[√] manager\n'
+      )
+    })
+
+    it('should return remote plugins', async () => {
+      await superSes001.shouldReply(
+        'kpm.ls --remote', /^共检索到: .*个插件/
       )
     })
   })
