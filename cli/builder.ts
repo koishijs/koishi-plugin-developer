@@ -19,6 +19,10 @@ const doCommand = (
   if (process.platform === 'win32') {
     cmd += '.cmd'
   }
+  console.log('working dir:', options?.cwd)
+  console.log(
+    `> ${cmd} ${args.join(' ')}`
+  )
   const execCmd = spawn(cmd, args, options)
   execCmd.stdout.pipe(process.stdout)
   execCmd.stderr.pipe(process.stderr)
@@ -27,15 +31,11 @@ const doCommand = (
   })
 })
 
-const runRollup = (args: any[], options: SpawnOptionsWithoutStdio = {}) => new Promise(resolve => {
+const runRollup = (args: any[], options: SpawnOptionsWithoutStdio = {}) => new Promise<number>(resolve => {
   args = [ '-c', ...args ]
   const cmd = 'rollup'
   const cwd = options.cwd ?? process.cwd()
 
-  console.log('working dir:', cwd)
-  console.log(
-    `> ${cmd} ${args.join(' ')}`
-  )
   resolve(doCommand(cmd, args, { ...options, cwd }))
 })
 
@@ -54,7 +54,10 @@ const buildPlugins = async (opts: Options) => {
       const promises = [
         ...[ 'esm', 'umd', 'min' ]
           .map(format => [ '--environment', `FORMAT:${format}` ])
-          .map(argv => runRollup(argv, rollupOptions))
+          .map(argv => runRollup(argv, rollupOptions)),
+        doCommand('tsc', '-p . --declaration --emitDeclarationOnly'.split(' '), {
+          cwd: `./packages/plugin-${plugin}`
+        })
       ]
       await Promise.all(promises)
       return
