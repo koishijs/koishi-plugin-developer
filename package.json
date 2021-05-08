@@ -12,6 +12,7 @@
   "homepage": "https://github.com/NWYLZW/koishi-plugin-developer#readme",
   "scripts": {
     "go-cqhttp:win-amd": "ts-node ./cli/run-gocq.ts -e windows-amd",
+    "go-cqhttp:lin-amd": "ts-node ./cli/run-gocq.ts -e linux-amd",
     "start:dev": "nodemon --exec yarn start:pro",
     "start:pro": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "clear": "rimraf ./packages/plugin-*/dist",
