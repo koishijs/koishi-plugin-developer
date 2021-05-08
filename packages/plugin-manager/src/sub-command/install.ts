@@ -7,7 +7,9 @@ import { doCommand, getLocalPluginPkgs, Package, searchPlugin } from 'koishi-plu
 
 export const registerInstallCmd = (ctx: Context, cmd: Command) => {
   cmd.subcommand(
-    '.install [...plugins]'
+    '.install [...plugins] 安装插件'
+  ).usage(
+    '安装插件到指定会话'
   ).alias(
     ...[ 'i', 'in', 'ins', 'inst', 'insta', 'instal', 'isnt', 'isnta', 'isntal', 'add' ].map(i => `kpm.${i}`)
   ).option(
@@ -44,7 +46,7 @@ export const registerInstallCmd = (ctx: Context, cmd: Command) => {
     }
     return '安装完成'
   }).subcommand(
-    '.remote [...plugins]'
+    '.remote [...plugins] 从远程安装插件(|依赖)'
   ).alias(
     ...[ 'r' ].map(i => `kpm.i.${i}`)
   ).action(async ({ session }, ...plugins) => {

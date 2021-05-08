@@ -5,7 +5,9 @@ import { getLocalPluginPkgs } from '../index'
 
 export const registerListCmd = (ctx: Context, cmd: Command) => {
   cmd.subcommand(
-    '.list', { authority: 4 }
+    '.list 插件列表', { authority: 4 }
+  ).usage(
+    '展示当前会话已安转的插件'
   ).alias(
     ...[ 'ls', 'l' ].map(i => `kpm.${i}`)
   ).option(
@@ -41,7 +43,7 @@ export const registerListCmd = (ctx: Context, cmd: Command) => {
     })
     return returnMsg
   }).parent.subcommand(
-    '.remote [query] 搜索远程依赖'
+    '.remote [query] 搜索远程插件(|依赖)'
   ).alias(
     ...[ 'r' ].map(i => `kpm.list.${i}`)
   ).option(

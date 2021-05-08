@@ -4,7 +4,9 @@ import { searchPlugin } from '../index'
 
 export const registerUnInstallCmd = (ctx: Context, cmd: Command) => {
   cmd.subcommand(
-    '.uninstall [...plugins]'
+    '.uninstall [...plugins] 卸载插件'
+  ).usage(
+    '从指定会话卸载插件'
   ).alias(
     ...[ 'uni', 'un', 'unlink', 'remove', 'rm', 'r' ].map(i => `kpm.${i}`)
   ).option(
