@@ -7,6 +7,7 @@ import { allPlugins } from './core/Context'
 import { npmApi } from './core/NpmApi'
 import fs from 'fs'
 import path from 'path'
+import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 
 // 插件名称
 export const name = 'manager'
@@ -45,6 +46,7 @@ type Package = {
   version: string
   author: string
   description: string
+  workspaces?: string[]
 }
 const getLocalPluginPkgs = (): Package[] => {
   const pluginPaths = glob.sync(path.resolve(
@@ -54,10 +56,29 @@ const getLocalPluginPkgs = (): Package[] => {
     const absPath = path.resolve(
       process.cwd(), pluginPath, './package.json'
     )
-    const pkg: Package = JSON.parse(fs.readFileSync(absPath).toString())
-    return pkg
+    return JSON.parse(fs.readFileSync(absPath).toString()) as Package
   })
 }
+
+const doCommand = (
+  cmd: string, args?: ReadonlyArray<string>, options?: SpawnOptionsWithoutStdio
+) => new Promise<number|string>((resolve, reject) => {
+  if (process.platform === 'win32') {
+    cmd += '.cmd'
+  }
+  const execCmd = spawn(cmd, args, options)
+  let outputStr = ''
+
+  execCmd.stdout.on('data', data => outputStr += data)
+  execCmd.stderr.on('data', data => outputStr += data)
+  execCmd.on('exit', code => {
+    if (code === 0) {
+      resolve(outputStr)
+    } else {
+      reject(outputStr)
+    }
+  })
+})
 
 export const apply = (ctx: Context, _config: Config = {}) => {
   const _logger = ctx.logger(`koishi-plugin-${name}`)
@@ -104,6 +125,47 @@ export const apply = (ctx: Context, _config: Config = {}) => {
       }
     }
     return '安装完成'
+  }).subcommand(
+    '.remote [...plugins]'
+  ).alias(
+    ...[ 'r' ].map(i => `kpm.i.${i}`)
+  ).action(async ({ session }, ...plugins) => {
+    const localPkgs = getLocalPluginPkgs()
+    const waitInstallPlugins = []
+    for (let i = 0; i < plugins.length; i++) {
+      const pluginName = plugins[i]
+      try {
+        if (localPkgs.findIndex(pkg => pkg.name === pluginName) >= 0) {
+          await session.send(`本地已安装 ${pluginName}，无须重复安装。`)
+        } else {
+          const pkgData = await npmApi.get(pluginName)
+          const pkg = pkgData.collected.metadata
+          waitInstallPlugins.push(pkg.name)
+        }
+      } catch (e) {
+        if (e.message === 'Request failed with status code 404') {
+          await session.send(`远程不存在 ${pluginName}。`)
+        }
+      }
+    }
+
+    const waitInstallPluginsStr = waitInstallPlugins.join(' ')
+    await session.send(`${waitInstallPluginsStr} 正在安装.`)
+    const args = []
+    const absPath = path.resolve(
+      process.cwd(), './package.json'
+    )
+    const pkg = JSON.parse(fs.readFileSync(absPath).toString()) as Package
+    if (pkg.workspaces) {
+      args.push('-W')
+    }
+    try {
+      await doCommand('yarn', [ 'add', ...args, ...waitInstallPlugins ])
+      await session.send(`${waitInstallPluginsStr} 安装完成.`)
+    } catch (e) {
+      await session.send(`${waitInstallPluginsStr} 安装失败.`)
+      await session.send(e)
+    }
   })
 
   kpmCmd.subcommand(
