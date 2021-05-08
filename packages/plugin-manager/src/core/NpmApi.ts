@@ -48,6 +48,16 @@ class NpmApi {
       `search?${ stringify({ q, from, size }) }`
     )
   }
+
+  async get(name: string): Promise<{
+    collected: {
+      metadata: Package
+    }
+  }> {
+    return await this.axios.get(
+      `package/${name}`
+    )
+  }
 }
 
 export const npmApi = new NpmApi()
