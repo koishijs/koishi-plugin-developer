@@ -23,16 +23,27 @@ interface Package {
 }
 
 class NpmApi {
-  root = 'https://api.npms.io/v2'
-  async search(q: string, from = 0, size = 10) {
-    return (await axios.get<{
-      total: number
-      results: {
-        "package": Package
-      }[]
-    }>(`${this.root}/search?${ stringify({
-      q, from, size
-    }) }`)).data
+  axios = axios.create({
+    baseURL: 'https://api.npms.io/v2/'
+  })
+
+  constructor() {
+    this.axios.interceptors.response.use(response => {
+      return response.data
+    }, error => {
+      return Promise.reject(error)
+    })
+  }
+
+  async search(q: string, from = 0, size = 10): Promise<{
+    total: number
+    results: {
+      package: Package
+    }[]
+  }> {
+    return await this.axios.get(
+      `search?${ stringify({ q, from, size }) }`
+    )
   }
 }
 
