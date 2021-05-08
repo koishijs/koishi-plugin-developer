@@ -22,6 +22,9 @@ interface Package {
   }
 }
 
+process.env.no_proxy = process.env?.no_proxy ?? ''
+process.env.no_proxy += ',api.npms.io'
+
 class NpmApi {
   axios = axios.create({
     baseURL: 'https://api.npms.io/v2/'
