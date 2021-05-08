@@ -25,7 +25,7 @@ const options = program.opts() as {
   config?: string
 }
 const filePath = new Proxy({
-  gocqExe: `.\\go-cqhttp\\${options.env}\\go-cqhttp`,
+  gocqExe: `./go-cqhttp/${options.env}/go-cqhttp`,
   optionConfig: options.config,
   envConfig: '.env.yml',
   envTempConfig: '.env.temp.yml'
