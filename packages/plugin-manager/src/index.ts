@@ -3,8 +3,6 @@ import { Context, Plugin } from 'koishi-core'
 import { merge } from 'koishi-utils'
 
 import './core/Context'
-import { allPlugins } from './core/Context'
-import { npmApi } from './core/NpmApi'
 import fs from 'fs'
 import path from 'path'
 import { registerInstallCmd } from './sub-command/install'
