@@ -9,10 +9,8 @@
 
 ## 常用指令
 
-* kpm
-  * `.i(nstall) [option] [...plugin]` 安装插件
-    * option `-g` global 全局
-  * `.uni(nstall) [option] [...plugin]` 卸载插件
-    * option `-g` global 全局
-  * `.ls | .list [option] [...plugin]` 展示当前会话已有插件
-    * option `-g` global 全局
+* `kpm`
+  * `.i(nstall) [...plugin]`
+  * `.un(install) [...plugin]`
+  * `.ls [...plugin]`
+    * `.remote`
