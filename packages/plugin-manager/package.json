@@ -7,6 +7,10 @@
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
   "typings": "dist/index.d.ts",
+  "files": [
+    "dist/*",
+    "README.md"
+  ],
   "scripts": {},
   "keywords": [
     "qqbot",
