@@ -1,9 +1,12 @@
+import glob from 'glob'
 import { Context, Plugin } from 'koishi-core'
 import { merge } from 'koishi-utils'
 
 import './core/Context'
 import { allPlugins } from './core/Context'
 import { npmApi } from './core/NpmApi'
+import fs from 'fs'
+import path from 'path'
 
 // 插件名称
 export const name = 'manager'
@@ -35,6 +38,25 @@ const searchPlugin = (plugin: string): {
     if (/^koishi-plugin-.*$/.test(pluginName)) return null
     return searchPlugin('koishi-plugin-' + pluginName)
   }
+}
+
+type Package = {
+  name: string
+  version: string
+  author: string
+  description: string
+}
+const getLocalPluginPkgs = (): Package[] => {
+  const pluginPaths = glob.sync(path.resolve(
+    process.cwd(), './node_modules/koishi-plugin-*'
+  ))
+  return pluginPaths.map(pluginPath => {
+    const absPath = path.resolve(
+      process.cwd(), pluginPath, './package.json'
+    )
+    const pkg: Package = JSON.parse(fs.readFileSync(absPath).toString())
+    return pkg
+  })
 }
 
 export const apply = (ctx: Context, _config: Config = {}) => {
@@ -125,9 +147,9 @@ export const apply = (ctx: Context, _config: Config = {}) => {
   })
 
   kpmCmd.subcommand(
-    '.list'
+    '.list', { authority: 4 }
   ).alias(
-    'kpm.ls'
+    ...[ 'ls', 'l' ].map(i => `kpm.${i}`)
   ).option(
     'global', '-g 全局', { type: 'boolean' }
   ).action(async ({ session, options }) => {
@@ -147,7 +169,23 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     })
     return pluginsList === '' ? '暂无已安装的插件' : pluginsList
   }).subcommand(
+    '.local'
+  ).alias(
+    ...[ 'l' ].map(i => `kpm.list.${i}`)
+  ).action(() => {
+    const pluginPkgs = getLocalPluginPkgs()
+    let returnMsg = `本地共检索到: ${ pluginPkgs.length }个依赖\n`
+    pluginPkgs.forEach(pkg => {
+      returnMsg += `${ pkg.name }[${ pkg.author }]\n`
+      returnMsg += pkg.description + '\n'
+      returnMsg += `最新版本: ${pkg.version}\n`
+      returnMsg += '='.repeat(24) + '\n'
+    })
+    return returnMsg
+  }).parent.subcommand(
     '.remote [query] 搜索远程依赖'
+  ).alias(
+    ...[ 'r' ].map(i => `kpm.list.${i}`)
   ).option(
     'page', '-p [page] 当前页码', { type: 'number', fallback: 0 }
   ).option(
@@ -161,7 +199,7 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     const pluginsPagination = await npmApi.search(
       query, options.page, options.size
     )
-    let returnMsg = `共检索到: ${ pluginsPagination.total }个以来\n`
+    let returnMsg = `远程共检索到: ${ pluginsPagination.total }个依赖\n`
     pluginsPagination.results.forEach(item => {
       const pkg = item.package
       returnMsg += `${ pkg.name }[${ pkg.author.name }]\n`

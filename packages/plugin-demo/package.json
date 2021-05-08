@@ -7,11 +7,20 @@
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
   "typings": "dist/index.d.ts",
-  "scripts": {
-  },
+  "scripts": {},
   "keywords": [
-    "qqbot", "cqhttp", "coolq",
-    "bot", "chatbot",
-    "koishi", "plugin"
-  ]
+    "qqbot",
+    "cqhttp",
+    "coolq",
+    "bot",
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "dependencies": {
+    "glob": "^7.1.7"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.3"
+  }
 }
