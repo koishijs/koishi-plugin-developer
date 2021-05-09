@@ -82,14 +82,14 @@ export const doCommand = (
 })
 
 export const apply = (ctx: Context, _config: Config = {}) => {
-  const _logger = ctx.logger(`koishi-plugin-${name}`)
+  const logger = ctx.logger(`koishi-plugin-${name}`)
   _config = merge(_config, defaultConfig)
 
   const kpmCmd = ctx.command(
     'kpm <subCmd> [args...] 插件管理工具。', { authority: 4 }
   )
   registerInstallCmd(
-    ctx, kpmCmd
+    ctx, kpmCmd, logger
   )
   registerUnInstallCmd(
     ctx, kpmCmd

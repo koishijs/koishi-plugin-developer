@@ -1,11 +1,11 @@
-import { Context, Command } from 'koishi-core'
+import { Context, Command, Logger } from 'koishi-core'
 import { allPlugins } from '../core/Context'
 import { npmApi } from '../core/NpmApi'
 import path from 'path'
 import fs from 'fs'
 import { doCommand, getLocalPluginPkgs, Package, searchPlugin } from 'koishi-plugin-manager'
 
-export const registerInstallCmd = (ctx: Context, cmd: Command) => {
+export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) => {
   cmd.subcommand(
     '.install [...plugins] 安装插件'
   ).usage(
@@ -24,6 +24,7 @@ export const registerInstallCmd = (ctx: Context, cmd: Command) => {
       const pluginName = '' + plugins[i]
       const data = searchPlugin(pluginName)
 
+      let msg
       if (data !== null) {
         const ctxPlugins = allPlugins.get(sessionCtx)
         if (options.global) {
@@ -39,10 +40,12 @@ export const registerInstallCmd = (ctx: Context, cmd: Command) => {
           ctxPluginData => ctxPluginData.plugin?.apply && ctxPluginData.plugin?.apply === data.pluginModule?.apply
         ).length >= 1
         !isInstalled && sessionCtx.plugin(data.pluginModule)
-        await session.send(`installed ${pluginName}`)
+        msg = `installed ${ pluginName }`
       } else {
-        await session.send(`本地未安装 ${pluginName} / koishi-plugin-${pluginName}`)
+        msg = `本地未安装 ${ pluginName } / koishi-plugin-${ pluginName }`
       }
+      await session.send(msg)
+      logger.info(msg)
     }
     return '安装完成'
   }).subcommand(
