@@ -10,7 +10,7 @@ export const router = (ctx: Context): Router => {
   router[Context.current] = ctx
 
   router.get('/test', async koaCtx => {
-    koaCtx.response.body = {
+    koaCtx.body = {
       detail: 'some messages.'
     }
   })
