@@ -3,8 +3,8 @@ import { merge } from 'koishi-utils'
 
 import Router from '@koa/router'
 import KoaLogger from 'koa-logger'
-
-import { router } from './controllers/common'
+import * as path from 'path'
+import glob from 'glob'
 
 // 插件名称
 export const name = 'demo-view'
@@ -37,8 +37,15 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     `/(.*)`, KoaLogger(str => logger.info(str))
   )
 
-  const r = router(ctx)
-  pluginRouter.use(r.routes(), r.allowedMethods())
+  glob.sync(
+    `${ path.resolve(__dirname, './controllers') }/*.ts`
+  ).forEach(controller => {
+    const controllerModule: {
+      router(ctx: Context): Router
+    } = require(controller)
 
+    const r = controllerModule.router(ctx)
+    pluginRouter.use(r.routes(), r.allowedMethods())
+  })
   ctx.router.use(pluginRouter.routes(), pluginRouter.allowedMethods())
 }
