@@ -34,8 +34,28 @@ export const apply = (ctx: Context, _config: Config = {}) => {
   })
   pluginRouter[Context.current] = ctx
   pluginRouter.all(
-    `/(.*)`, KoaLogger(str => logger.info(str))
+    '/(.*)', KoaLogger(str => logger.info(str))
   )
+  pluginRouter.all('/(.*)', async (koaCtx, next) => {
+    try {
+      await next()
+    } catch (e) {
+      if (e instanceof Error && typeof e.message === 'string') {
+        const [
+          _allMsg, status, msg
+        ] = /^\[(.*)]:(.*)$/[Symbol.match](e.message)
+        if (status && msg) {
+          koaCtx.status = +status
+          koaCtx.body = msg
+        } else {
+          throw e
+        }
+        logger.error(e)
+      } else {
+        throw e
+      }
+    }
+  })
 
   glob.sync(
     `${ path.resolve(__dirname, './controllers') }/*.ts`
