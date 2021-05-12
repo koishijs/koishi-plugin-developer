@@ -7,7 +7,6 @@ export const router = (ctx: Context): Router => {
   const router = new Router({
     prefix: `/${ prefix }`
   })
-  router[Context.current] = ctx
 
   router.get('/test', async koaCtx => {
     koaCtx.body = {
