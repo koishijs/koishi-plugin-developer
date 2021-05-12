@@ -40,10 +40,11 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     try {
       await next()
     } catch (e) {
-      if (e instanceof Error && typeof e.message === 'string') {
+      const re = /^\[(.*)]:(.*)$/
+      if (e instanceof Error && typeof e.message === 'string' && re.test(e.message)) {
         const [
           _allMsg, status, msg
-        ] = /^\[(.*)]:(.*)$/[Symbol.match](e.message)
+        ] = re[Symbol.match](e.message)
         if (status && msg) {
           koaCtx.status = +status
           koaCtx.body = msg

@@ -27,13 +27,16 @@ export const router = (ctx: Context): Router => {
       fields: string
     }
 
-    const user = await ctx.database.getUser(
-      platform, uid, [ 'id', ...(
-        (fields ?? '').split(',') as User.Index[]
-      ) ]
-    )
+    const bot = ctx.bots.filter(bot => bot.platform === platform)[0] ?? undefined
+    if (!bot) throw new Error('[422]:平台不存在.')
+
+    const user = await bot.getUser(uid)
     if (!user) throw new Error('[404]:用户不存在.')
-    koaCtx.body = user
+    const userOut = {}
+    ;(fields ?? '').split(',').forEach(field => {
+      userOut[field] = user[field] ?? undefined
+    })
+    koaCtx.body = userOut
   })
   return router
 }
