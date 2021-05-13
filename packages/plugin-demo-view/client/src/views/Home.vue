@@ -1,55 +1,40 @@
 <template>
-  <h1>hello, this is home.</h1>
+  <h1>搜索 qq 账号对应的用户.</h1>
   <div class="users-search">
-    <div class="user">
-      <img :src="user.avatar" :alt="user.userId">
-      <span>{{ user.username }}</span>
-    </div>
+    <input
+      type="text"
+      :value="userId"
+      @change="e => $refs.showUserCard.refreshData(e.target.value)"/>
+    <user-card
+      ref="showUserCard"
+      :user-id="userId"/>
   </div>
 </template>
 
 <script lang="ts">
-import { ref, defineComponent, onMounted } from 'vue'
-import axios from 'axios'
+import { Options, Vue } from 'vue-class-component'
+import UserCard from './components/UserCard.vue'
 
-type User = {
-  userId: string
-  avatar: string
-  username: string
-}
-
-export default defineComponent({
-  setup() {
-    const user = ref<User>({
-      userId: '-1',
-      avatar: '',
-      username: ''
-    })
-    onMounted(async () => {
-      user.value = (await axios.get(
-        `/apis/demo-view/common/onebot/2284672637?fields=userId,avatar,avatar,username`
-      )).data
-      console.log(user)
-    })
-    return { user }
-  }
+@Options({
+  components: { UserCard }
 })
+export default class Home extends Vue {
+  userId: string = ''
+}
 </script>
 
-<style>
+<style scoped lang="scss">
 .users-search {
-}
-.users-search > .user {
-  background-color: aliceblue;
-  border: 1px solid #ededed;
+  > input {
+    padding: 5px;
+    margin-bottom: 20px;
+    border: 2px solid #adadad;
+    border-radius: 4px;
+    background-color: #fefefe;
+  }
 
-  display: flex;
-  align-content: space-around;
-}
-
-.users-search > .user > img {
-  width: 62px; height: 62px;
-  border-radius: 50%;
-  border: 1px solid #ededed;
+  > .user-card {
+    width: 200px;
+  }
 }
 </style>
