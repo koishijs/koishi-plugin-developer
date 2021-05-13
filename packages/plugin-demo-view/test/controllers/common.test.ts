@@ -11,7 +11,7 @@ const app = new KoishiApp({
 })
 app.plugin(require('koishi-plugin-demo-view'), {})
 
-axios.defaults.baseURL = `http://localhost:${ port }`
+axios.defaults.baseURL = `http://localhost:${ port }/plugin-apis`
 
 after(() => {
   process.exit()
