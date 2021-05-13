@@ -1,28 +1,12 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "esnext",
-    "module": "commonjs",
-    "strict": true,
-    "strictNullChecks": false,
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "noImplicitAny": false,
-    "sourceMap": true,
-    "baseUrl": ".",
     "jsx": "react",
-    "types": [ "node", "mocha" ],
+    "baseUrl": ".",
     "paths": {
       "@/*": [ "src/*" ],
       "koishi-plugin-*": [ "packages/plugin-*/src" ]
-    },
-    "lib": [
-      "esnext", "dom"
-    ]
+    }
   },
   "include": [
     "cli/**/*.ts",
@@ -33,5 +17,8 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "ts-node": {
+    "require": [ "tsconfig-paths/register" ]
+  }
 }
