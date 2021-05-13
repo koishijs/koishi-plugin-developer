@@ -20,10 +20,9 @@ export default defineConfig({
     host: 'localhost',
     port: 18080,
     proxy: {
-      '/apis': {
+      '/plugin-apis': {
         target: 'http://localhost:43333',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/apis/, '')
+        changeOrigin: true
       }
     }
   },

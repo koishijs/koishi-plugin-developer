@@ -30,7 +30,7 @@ export const apply = (ctx: Context, _config: Config = {}) => {
   _config = merge(_config, defaultConfig)
 
   const pluginRouter = new Router({
-    prefix: `/${ name }`
+    prefix: `/plugin-apis/${ name }`
   })
   pluginRouter[Context.current] = ctx
   pluginRouter.all(

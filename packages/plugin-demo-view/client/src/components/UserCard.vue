@@ -25,7 +25,7 @@ export default defineComponent({
     const user = ref<User>({ })
     const refreshData = async (userId) => {
       user.value = (await axios.get(
-        `/apis/demo-view/common/onebot/${userId}?fields=userId,avatar,avatar,username`
+        `/plugin-apis/demo-view/common/onebot/${userId}?fields=userId,avatar,avatar,username`
       )).data
     }
     onMounted(async () => {
