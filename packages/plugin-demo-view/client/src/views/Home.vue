@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component'
-import UserCard from './components/UserCard.vue'
+import UserCard from '@/components/UserCard.vue'
 
 @Options({
   components: { UserCard }
