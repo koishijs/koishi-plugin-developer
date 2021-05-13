@@ -13,6 +13,9 @@ describe('Manager plugin', () => {
     await app.database.initChannel('001')
     await app.database.initChannel('002')
   })
+  after(async () => {
+    process.exit(0)
+  })
   const superSes001 = app.session('001')
   const superSes001Chanel001 = app.session('001', '001')
   const _superSes001Chanel002 = app.session('001', '002')
@@ -21,7 +24,7 @@ describe('Manager plugin', () => {
   const _superSes002Chanel002 = app.session('002', '002')
 
   describe('list plugins', function () {
-    this.timeout(5000)
+    this.timeout(30000)
 
     it('should have no plugin installed', async () => {
       await superSes001.shouldReply(
@@ -41,16 +44,16 @@ describe('Manager plugin', () => {
     it('should return remote plugins', async () => {
       const cmd = 'kpm.ls.remote'
       await superSes001.shouldReply(
-        cmd, /^共检索到: .*个插件/
+        cmd, /^远程共检索到: .*个依赖/
       )
       await superSes001.shouldReply(
-        `${cmd} -p 1 -s 10`, /^共检索到: .*个插件/
+        `${cmd} -p 1 -s 10`, /^远程共检索到: .*个依赖/
       )
       await superSes001.shouldReply(
-        `${cmd} -p 1`, /^共检索到: .*个插件/
+        `${cmd} -p 1`, /^远程共检索到: .*个依赖/
       )
       await superSes001.shouldReply(
-        `${cmd} -s 10`, /^共检索到: .*个插件/
+        `${cmd} -s 10`, /^远程共检索到: .*个依赖/
       )
     })
   })

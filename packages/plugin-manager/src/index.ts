@@ -1,12 +1,13 @@
 import glob from 'glob'
+import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 import { Context, Plugin } from 'koishi-core'
 import { merge } from 'koishi-utils'
+import Router from '@koa/router'
+import KoaLogger from 'koa-logger'
 
 import './core/Context'
-import fs from 'fs'
 import path from 'path'
 import { registerInstallCmd } from './sub-command/install'
-import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 import { registerUnInstallCmd } from './sub-command/uninstall'
 import { registerListCmd } from './sub-command/list'
 
@@ -40,25 +41,6 @@ export const searchPlugin = (plugin: string): {
     if (/^koishi-plugin-.*$/.test(pluginName)) return null
     return searchPlugin('koishi-plugin-' + pluginName)
   }
-}
-
-export type Package = {
-  name: string
-  version: string
-  author: string
-  description: string
-  workspaces?: string[]
-}
-export const getLocalPluginPkgs = (): Package[] => {
-  const pluginPaths = glob.sync(path.resolve(
-    process.cwd(), './node_modules/koishi-plugin-*'
-  ))
-  return pluginPaths.map(pluginPath => {
-    const absPath = path.resolve(
-      process.cwd(), pluginPath, './package.json'
-    )
-    return JSON.parse(fs.readFileSync(absPath).toString()) as Package
-  })
 }
 
 export const doCommand = (

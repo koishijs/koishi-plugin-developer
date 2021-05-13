@@ -3,7 +3,8 @@ import { allPlugins } from '../core/Context'
 import { npmApi } from '../core/NpmApi'
 import path from 'path'
 import fs from 'fs'
-import { doCommand, getLocalPluginPkgs, Package, searchPlugin } from 'koishi-plugin-manager'
+import { doCommand, searchPlugin } from '../index'
+import { Package, pluginService } from '../services/plugin'
 
 export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) => {
   cmd.subcommand(
@@ -53,7 +54,7 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
   ).alias(
     ...[ 'r' ].map(i => `kpm.i.${i}`)
   ).action(async ({ session }, ...plugins) => {
-    const localPkgs = getLocalPluginPkgs()
+    const localPkgs = pluginService.localPlugins()
     const waitInstallPlugins = []
     for (let i = 0; i < plugins.length; i++) {
       const pluginName = plugins[i]

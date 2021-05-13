@@ -1,7 +1,7 @@
 import { Command, Context } from 'koishi-core'
 import { allPlugins } from '../core/Context'
 import { npmApi } from '../core/NpmApi'
-import { getLocalPluginPkgs } from '../index'
+import { pluginService } from '../services/plugin'
 
 export const registerListCmd = (ctx: Context, cmd: Command) => {
   cmd.subcommand(
@@ -33,7 +33,7 @@ export const registerListCmd = (ctx: Context, cmd: Command) => {
   ).alias(
     ...[ 'l' ].map(i => `kpm.list.${i}`)
   ).action(() => {
-    const pluginPkgs = getLocalPluginPkgs()
+    const pluginPkgs = pluginService.localPlugins()
     let returnMsg = `本地共检索到: ${ pluginPkgs.length }个依赖\n`
     pluginPkgs.forEach(pkg => {
       returnMsg += `${ pkg.name }[${ pkg.author }]\n`
