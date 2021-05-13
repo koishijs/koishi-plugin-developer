@@ -11,7 +11,28 @@
     "dist/*",
     "README.md"
   ],
-  "scripts": {},
+  "scripts": {
+    "serve:client": "vite preview",
+    "serve:client:dev": "vite",
+    "build:client": "vuedx-typecheck . && vite build"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "koa-logger": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/koa-logger": "^3.1.1",
+    "@vitejs/plugin-vue": "^1.2.2",
+    "@vue/compiler-sfc": "^3.1.0-beta.3",
+    "@vuedx/typecheck": "^0.6.3",
+    "@vuedx/typescript-plugin-vue": "^0.6.3",
+    "jest-mock": "^26.6.2",
+    "sass": "^1.32.13",
+    "vite": "^2.3.2",
+    "vue": "^3.0.11",
+    "vue-class-component": "^8.0.0-rc.1",
+    "vue-router": "^4.0.6"
+  },
   "keywords": [
     "qqbot",
     "cqhttp",
@@ -20,8 +41,5 @@
     "chatbot",
     "koishi",
     "plugin"
-  ],
-  "dependencies": {
-    "axios": "^0.21.1"
-  }
+  ]
 }
