@@ -3,6 +3,7 @@ import * as manager from 'koishi-plugin-manager'
 
 describe('Manager plugin', () => {
   const app = new App({
+    port: 30000,
     mockDatabase: true
   })
   app.plugin(manager, {})
