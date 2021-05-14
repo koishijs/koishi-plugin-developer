@@ -4,6 +4,7 @@ import cap from 'chai-as-promised'
 import axios from 'axios'
 
 import * as manager from 'koishi-plugin-manager'
+import { stringify } from 'querystring'
 
 use(cap)
 
@@ -28,6 +29,13 @@ describe('plugins apis.', function () {
   it('should return plugins data', async () => {
     await expect(
       axios.get('/')
+    ).to.eventually
+      .have.property('data')
+      .have.property('0').have.property('name', 'koishi-plugin-demo')
+    await expect(
+      axios.get(`/?${ stringify({
+        isRemote: true
+      }) }`)
     ).to.eventually
       .have.property('data')
       .have.property('0').have.property('name', 'koishi-plugin-demo')

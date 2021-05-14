@@ -9,6 +9,10 @@ export const router = (ctx: Context): Router => {
     prefix: `/${ prefix }`
   })
   router.get('/', async koaCtx => {
+    const test = (koaCtx.query?.isRemote ?? '').toString().trim().toLowerCase()
+    const isRemote = !((test === 'false') || (test === '0') || (test === ''))
+
+    console.log(isRemote)
     koaCtx.body = pluginService.localPlugins()
   })
   router.get('/:pluginName', async koaCtx => {
