@@ -1,7 +1,7 @@
 <template>
   <div v-if="!!plugin" class="plugin-card">
     <div class="icon" :style="{
-      'background-image': `url(${genAvatar(plugin)})`
+      'background-image': `url(${genAvatar(plugin.name)})`
     }"/>
     <div class="detail">
       <div class="head">
@@ -42,7 +42,7 @@ export type Plugin = {
   name: string
   version: string
   desc: string
-  publisher: {
+  publisher?: {
     username: string
     email: string
     avatar?: string
@@ -56,17 +56,20 @@ export default defineComponent({
     }
   },
   setup(props) {
-    const genAvatar = (plugin: Plugin) => {
-      return 'data:image/png;base64,' + new Identicon(
-        md5(plugin.name + plugin.version), {
-          background: [ 255, 255, 255, 0 ], size: 128
-        }
-      ).toString()
+    const genAvatar = str => 'data:image/png;base64,' + new Identicon(
+      md5(str), {
+        background: [ 255, 255, 255, 0 ], size: 128
+      }
+    ).toString()
+
+    if (props.plugin.publisher.email) {
+      props.plugin.publisher.avatar = gravatar.url(props.plugin.publisher.email, {
+        s: '200', r: 'pg', d: '404'
+      })
+    } else {
+      props.plugin.publisher.avatar = genAvatar(props.plugin.publisher.username)
     }
 
-    props.plugin.publisher.avatar = gravatar.url(props.plugin.publisher.email, {
-      s: '200', r: 'pg', d: '404'
-    })
     return {
       genAvatar
     }
@@ -92,7 +95,7 @@ export default defineComponent({
   padding: 10px;
   border: 1px solid #adadad;
   border-radius: 10px;
-  width: 300px; height: $card-h;
+  height: $card-h;
 
   background-color: #fdfdfd;
 
@@ -136,9 +139,12 @@ export default defineComponent({
         margin-right: 4px;
         color: #616161;
         font: {
-          size: 20px;
+          size: 18px;
           weight: bold;
         };
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
 
       > .version {
@@ -170,7 +176,7 @@ export default defineComponent({
     > .desc {
       color: #888888;
       font: {
-        size: 14px;
+        size: 12px;
       };
       overflow: hidden;
       white-space: nowrap;

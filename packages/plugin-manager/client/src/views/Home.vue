@@ -4,24 +4,18 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component'
-import { VueDraggableNext as Draggable } from 'vue-draggable-next'
-
-import PluginCard from '@/components/PluginCard.vue'
+import { Plugin } from '@/components/PluginCard.vue'
 import PluginsCard from '@/components/PluginsCard.vue'
+import { pluginsApi } from '@/apis/pluginsApi'
 
 @Options({
-  components: {PluginsCard, Draggable, PluginCard }
+  components: {PluginsCard }
 })
 export default class Home extends Vue {
-  plugins = [ ...new Array(9).keys() ].map(i => new Object({
-    name: `test-${ i }`,
-    version: '1.0.0',
-    desc: '一个测试的小插件.',
-    publisher: {
-      username: 'yijie4188',
-      email: 'yijie4188@gmail.com'
-    }
-  }))
+  plugins: Plugin[] = [  ]
+  async mounted() {
+    this.plugins = await pluginsApi.searchPlugins()
+  }
 }
 </script>
 

@@ -101,13 +101,14 @@ export default defineComponent({
 
   > .plugins {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 322px);
+    grid-template-columns: repeat(auto-fill, 382px);
     justify-content: space-evenly;
     grid-row-gap: 20px;
 
     padding: 10px;
 
     ::v-deep .plugin-card {
+      width: 360px;
     }
   }
 }
