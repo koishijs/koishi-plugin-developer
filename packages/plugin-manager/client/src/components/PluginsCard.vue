@@ -14,7 +14,8 @@
         animation: 300,
         ghostClass: 'plugins-card-ghost'
       }"
-      :group="{ name: 'people', put: true }">
+      @change="$forceUpdate()"
+      :group="{ name: 'plugins', clone: true, put: true }">
       <transition-group type="transition" name="flip-list">
         <plugin-card :key="plugin.name"
                      v-for="plugin in plugins"
@@ -107,7 +108,7 @@ export default defineComponent({
 
     padding: 10px;
 
-    ::v-deep .plugin-card {
+    :deep(.plugin-card) {
       width: 360px;
     }
   }

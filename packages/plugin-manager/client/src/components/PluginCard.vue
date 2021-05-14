@@ -7,7 +7,8 @@
       <div class="head">
         <label
           class="name"
-          v-text="plugin.name"/>
+          @click="openNpmUrl(plugin.name)"
+          v-text="plugin.name.replace('koishi-plugin-', '')"/>
         <label
           class="version"
           v-text="plugin.version"/>
@@ -72,6 +73,11 @@ export default defineComponent({
 
     return {
       genAvatar
+    }
+  },
+  methods: {
+    openNpmUrl(pkgName: string) {
+      open(`https://www.npmjs.com/package/${pkgName}`, '_blank')
     }
   }
 })
@@ -145,6 +151,8 @@ export default defineComponent({
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+
+        cursor: pointer;
       }
 
       > .version {
