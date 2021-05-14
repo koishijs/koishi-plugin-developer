@@ -2,7 +2,7 @@ import { Context } from 'koishi-core'
 import Router from '@koa/router'
 import { pluginService } from '../services/plugin'
 
-const prefix = 'local'
+const prefix = 'plugins'
 
 export const router = (ctx: Context): Router => {
   const router = new Router({
