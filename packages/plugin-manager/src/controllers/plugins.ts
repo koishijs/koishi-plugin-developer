@@ -58,7 +58,16 @@ export const router = (ctx: Context): Router => {
       return
     }
 
-    koaCtx.body = pluginService.localPlugins(undefined, qs.q.split(' ').filter(s => s !== ''))
+    const localPlugins = pluginService.localPlugins(
+      undefined, qs.q.split(' ').filter(s => s !== '')
+    )
+
+    koaCtx.body = {
+      total: localPlugins.length,
+      results: localPlugins.slice(qs.page * qs.size, (qs.page + 1) * qs.size).map(p => new Object({
+        package: p
+      }))
+    }
   })
 
   router.get('/:pluginName', async koaCtx => {

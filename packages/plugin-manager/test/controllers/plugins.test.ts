@@ -16,20 +16,28 @@ describe('plugins apis.', function () {
   this.timeout(30000)
 
   it('should return local plugins data', async () => {
-    await expect(
-      axios.get('/')
-    ).to.eventually
-      .have.property('data')
-      .have.property('0').have.property('name', 'koishi-plugin-demo')
+    let d = await axios.get('/')
 
-    await expect(
-      axios.get(`/?${ stringify({
-        q: 'manager'
-      }) }`)
-    ).to.eventually
+    expect(d).to
       .have.property('data')
+      .have.property('total').exist
+
+    expect(d).to
+      .have.property('data')
+      .have.property('results')
       .have.property('0')
-      .have.property('name', 'koishi-plugin-manager')
+      .have.property('package')
+      .have.property('name').match(/^koishi-plugin-.*$/)
+
+    d = await axios.get(`/?${ stringify({
+      q: 'manager'
+    }) }`)
+    expect(d).to
+      .have.property('data')
+      .have.property('results')
+      .have.property('0')
+      .have.property('package')
+      .have.property('name').match(/.*manager.*/)
   })
 
   it('should return remote plugins data.', async () => {
@@ -42,7 +50,7 @@ describe('plugins apis.', function () {
 
     expect(d).to
       .have.property('data')
-      .have.property('results').length(10)
+      .have.property('results').length.lte(10)
 
     expect(d).to
       .have.property('data')
