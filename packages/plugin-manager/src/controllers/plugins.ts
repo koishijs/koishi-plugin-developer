@@ -3,6 +3,7 @@ import Router from '@koa/router'
 import { ParsedUrlQuery } from 'querystring'
 
 import { pluginService } from '../services/plugin'
+import { npmApi } from '../core/NpmApi'
 
 const prefix = 'plugins'
 
@@ -41,18 +42,25 @@ export const router = (ctx: Context): Router => {
   const router = new Router({
     prefix: `/${ prefix }`
   })
+
   router.get('/', async koaCtx => {
     const qs = parserQS(koaCtx.query, {
       q: '',
-      isRemote: false
+      isRemote: false,
+      page: 0, size: 10
     })
 
-    if (!qs.isRemote) {
-      koaCtx.body = pluginService.localPlugins(undefined, qs.q.split(' ').filter(s => s !== ''))
+    if (qs.isRemote) {
+      qs.q = qs.q || 'koishi-plugin'
+      koaCtx.body = await npmApi.search(
+        qs.q, qs.page, qs.size
+      )
       return
     }
-    console.log(qs.isRemote)
+
+    koaCtx.body = pluginService.localPlugins(undefined, qs.q.split(' ').filter(s => s !== ''))
   })
+
   router.get('/:pluginName', async koaCtx => {
     const { pluginName } = koaCtx.params as {
       pluginName: string
