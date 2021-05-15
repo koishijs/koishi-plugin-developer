@@ -16,12 +16,12 @@ export const pluginService = {
       root, './node_modules/*koishi-plugin-*'
     ))
     const pRoot = path.resolve(root, '../')
-    const plugins = pluginPaths.map(pluginPath => {
-      const absPath = path.resolve(
-        process.cwd(), pluginPath, './package.json'
-      )
-      return JSON.parse(fs.readFileSync(absPath).toString()) as Package
-    })
+    const plugins = pluginPaths.filter(pluginPath =>
+        keyWords.length === 0 || (keyWords.filter(k => pluginPath.indexOf(k) >= 0)).length > 0
+      ).map(pluginPath => {
+        const absPath = path.resolve(pluginPath, './package.json')
+        return JSON.parse(fs.readFileSync(absPath).toString()) as Package
+      })
     ;(pRoot === root?[]:this.localPlugins(pRoot, keyWords)).forEach(pkg => {
       const index = plugins.findIndex(plugin => plugin.name === pkg.name)
       if (index == -1) plugins.push(pkg)
