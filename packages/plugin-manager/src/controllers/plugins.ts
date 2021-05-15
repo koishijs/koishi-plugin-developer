@@ -75,8 +75,11 @@ export const router = (ctx: Context): Router => {
       pluginName: string
     }
     const [ plugin ]= pluginService.localPlugins().filter(
-      pkg => pkg.name !== pluginName || !new RegExp(`.*koishi-plugin-${pluginName}`).test(pluginName)
+      pkg => new RegExp(`.*koishi-plugin-${ pluginName }`).test(pkg.name)
     )
+    if (!plugin) {
+      throw new Error('[404]:插件不存在.')
+    }
     koaCtx.body = plugin
   })
   return router

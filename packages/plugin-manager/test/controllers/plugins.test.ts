@@ -15,7 +15,7 @@ describe('plugins apis.', function () {
 
   this.timeout(30000)
 
-  it('should return local plugins data', async () => {
+  it('should return local plugins data.', async () => {
     let d = await axios.get('/')
 
     expect(d).to
@@ -68,11 +68,17 @@ describe('plugins apis.', function () {
       .have.property('results').length(3)
   })
 
-  it('should return plugin data', async () => {
+  it('should return plugin data.', async () => {
     await expect(
       axios.get('/demo')
     ).to.eventually
       .have.property('data')
       .have.property('name', 'koishi-plugin-demo')
+
+    try {
+      await axios.get('/asdafwefwedsacdscad')
+    } catch (e) {
+      expect(e.response).have.property('status', 404)
+    }
   })
 })
