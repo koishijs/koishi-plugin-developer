@@ -13,26 +13,51 @@ after(process.exit)
 describe('plugins apis.', function () {
   axios.defaults.baseURL += '/plugins'
 
-  it('should return plugins data', async () => {
+  this.timeout(30000)
+
+  it('should return local plugins data', async () => {
     await expect(
       axios.get('/')
     ).to.eventually
       .have.property('data')
       .have.property('0').have.property('name', 'koishi-plugin-demo')
+
     await expect(
       axios.get(`/?${ stringify({
         q: 'manager'
       }) }`)
     ).to.eventually
       .have.property('data')
-      .have.property('0').have.property('name', 'koishi-plugin-manager')
-    await expect(
-      axios.get(`/?${ stringify({
-        isRemote: true
-      }) }`)
-    ).to.eventually
+      .have.property('0')
+      .have.property('name', 'koishi-plugin-manager')
+  })
+
+  it('should return remote plugins data.', async () => {
+    let d = await axios.get(`/?${ stringify({
+      isRemote: true
+    }) }`)
+    expect(d).to
       .have.property('data')
-      .have.property('0').have.property('name', 'koishi-plugin-demo')
+      .have.property('total').exist
+
+    expect(d).to
+      .have.property('data')
+      .have.property('results').length(10)
+
+    expect(d).to
+      .have.property('data')
+      .have.property('results')
+      .have.property('0')
+      .have.property('package')
+      .have.property('name').match(/^koishi-plugin-.*$/)
+
+    d = await axios.get(`/?${ stringify({
+      isRemote: true, page: 0, size: 3
+    }) }`)
+
+    expect(d).to
+      .have.property('data')
+      .have.property('results').length(3)
   })
 
   it('should return plugin data', async () => {
