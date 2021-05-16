@@ -69,6 +69,10 @@ export const router = (ctx: Context): Router => {
     }
   })
 
+  router.post('/', async koaCtx => {
+    // TODO install plugins
+  })
+
   router.get('/:pluginName', async koaCtx => {
     const { pluginName } = koaCtx.params as {
       pluginName: string

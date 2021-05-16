@@ -27,5 +27,8 @@ export const pluginService = {
       if (index == -1) plugins.push(pkg)
     })
     return plugins
+  },
+  installPlugins() {
+    // TODO install plugins
   }
 }
