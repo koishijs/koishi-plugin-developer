@@ -49,7 +49,6 @@ export const router = (ctx: Context): Router => {
       isRemote: false,
       page: 0, size: 10
     })
-
     if (qs.isRemote) {
       qs.q = qs.q || 'koishi-plugin'
       koaCtx.body = await npmApi.search(
