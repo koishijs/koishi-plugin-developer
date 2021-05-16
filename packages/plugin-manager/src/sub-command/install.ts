@@ -12,7 +12,7 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
   ).usage(
     '安装插件到指定会话'
   ).alias(
-    ...[ 'i', 'in', 'ins', 'inst', 'insta', 'instal', 'isnt', 'isnta', 'isntal', 'add' ].map(i => `kpm.${i}`)
+    ...[ 'i', 'ins', 'add' ].map(i => `kpm.${i}`)
   ).option(
     'global', '-g 全局', { type: 'boolean' }
   ).action(async ({ session, options }, ...plugins) => {
@@ -52,7 +52,9 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
   }).subcommand(
     '.remote [...plugins] 从远程安装插件(|依赖)'
   ).alias(
-    ...[ 'r' ].map(i => `kpm.i.${i}`)
+    ...[ 'remote', 'r' ].map(i => `kpm.i.${ i }`),
+    ...[ 'remote', 'r' ].map(i => `kpm.ins.${ i }`),
+    ...[ 'remote', 'r' ].map(i => `kpm.add.${ i }`)
   ).action(async ({ session }, ...plugins) => {
     const localPkgs = pluginService.localPlugins()
     const waitInstallPlugins = []
