@@ -7,16 +7,32 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
   cmd.subcommand(
     '.install [...plugins]', '安装插件'
   ).usage(
-    '安装插件到指定会话'
+    '安装插件到当前会话'
   ).alias(
     ...[ 'i', 'ins', 'add' ].map(i => `kpm.${i}`)
   ).option(
+    'channel', '-c 频道', { type: 'boolean' }
+  ).option(
     'global', '-g 全局', { type: 'boolean' }
   ).action(async ({ session, options }, ...plugins) => {
-    let sessionCtx = ctx.select(
-      'userId', session.userId
-    )
-    if (options.global) { sessionCtx = ctx.app }
+    let sessionCtx = ctx
+
+    if (!options.channel && !options.global) {
+      sessionCtx = ctx.select(
+        'userId', session.userId
+      )
+    }
+    if (options.channel) {
+      if (!session.groupId) {
+        return '当前会话不是频道，无法使用 `group` 参数。'
+      }
+      sessionCtx = sessionCtx.select(
+        'groupId', session.groupId
+      )
+    }
+    if (options.global) {
+      sessionCtx = ctx.app
+    }
 
     for (let i = 0; i < plugins.length; i++) {
       const pluginName = '' + plugins[i]
@@ -37,8 +53,12 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
         const isInstalled = ctxPlugins && ctxPlugins.filter(
           ctxPluginData => ctxPluginData.plugin?.apply && ctxPluginData.plugin?.apply === data.pluginModule?.apply
         ).length >= 1
-        !isInstalled && sessionCtx.plugin(data.pluginModule)
-        msg = `installed ${ pluginName }`
+        if (isInstalled) {
+          msg = `当前会话已安装 ${ pluginName }`
+        } else {
+          sessionCtx.plugin(data.pluginModule)
+          msg = `installed ${ pluginName }`
+        }
       } else {
         msg = `本地未安装 ${ pluginName } / koishi-plugin-${ pluginName }`
       }
