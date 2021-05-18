@@ -2,9 +2,10 @@ import { Context, Plugin, Session } from 'koishi-core'
 
 const CtxProto = Context.prototype
 
-const sourceContextMethods: Pick<Context, 'select' | 'plugin'> = {
+const sourceContextMethods: Pick<Context, 'select' | 'plugin' | 'dispose'> = {
   select: CtxProto.select,
-  plugin: CtxProto.plugin
+  plugin: CtxProto.plugin,
+  dispose: CtxProto.dispose
 }
 
 const allContexts = new Map<Context, {
@@ -47,6 +48,15 @@ class AllPlugins extends Map<Context, {
     })
     return plugins
   }
+  searchCtx(plugin: Plugin) {
+    let ctx = null
+    this.forEach((pluginDatas, val) => {
+      if (pluginDatas.filter(pluginData => pluginData.plugin === plugin)[0] ?? null) {
+        ctx = val
+      }
+    })
+    return ctx
+  }
 }
 export const allPlugins = new AllPlugins()
 
@@ -63,4 +73,17 @@ CtxProto.plugin = function <T extends Plugin>(
     ctxPlugins.push({ plugin, options })
   }
   return sourceContextMethods.plugin.call(this, plugin, options)
+}
+
+CtxProto.dispose = async function (plugin?: Plugin<any>): Promise<void> {
+  const ctxPlugins = allPlugins.get(allPlugins.searchCtx(
+    plugin
+  ))
+  if (ctxPlugins) {
+    const index = ctxPlugins.findIndex(val => val.plugin.apply === plugin.apply)
+    if (index >= 0) {
+      ctxPlugins.splice(index, 1)
+    }
+  }
+  await sourceContextMethods.dispose.call(this, plugin)
 }
