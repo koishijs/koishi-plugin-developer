@@ -1,5 +1,6 @@
 import { App } from 'koishi-test-utils'
 import * as manager from 'koishi-plugin-manager'
+import { allPlugins } from '../src/core/Context'
 
 describe('Manager plugin', () => {
   const app = new App({
@@ -7,6 +8,9 @@ describe('Manager plugin', () => {
     mockDatabase: true
   })
   app.plugin(manager, {})
+  // app.on('message', session => {
+  //   console.log(session.username, session.groupId, session.content)
+  // })
 
   before(async () => {
     await app.database.initUser('001', 4)
@@ -19,10 +23,10 @@ describe('Manager plugin', () => {
   })
   const superSes001 = app.session('001')
   const superSes001Chanel001 = app.session('001', '001')
-  const _superSes001Chanel002 = app.session('001', '002')
+  const superSes001Chanel002 = app.session('001', '002')
   const superSes002 = app.session('002')
   const superSes002Chanel001 = app.session('002', '001')
-  const _superSes002Chanel002 = app.session('002', '002')
+  const superSes002Chanel002 = app.session('002', '002')
 
   describe('list plugins', function () {
     this.timeout(30000)
@@ -60,6 +64,12 @@ describe('Manager plugin', () => {
   })
 
   describe('install plugin', () => {
+    beforeEach(() => {
+      allPlugins.plugins.forEach(val => {
+        val.apply !== manager.apply && app.dispose(val)
+      })
+    })
+
     it('should installed demo plugin in private session.', async () => {
       await superSes001.shouldReply(
         'kpm.install demo', [
@@ -87,11 +97,35 @@ describe('Manager plugin', () => {
       await superSes001.shouldReply(
         'hello bot', 'hello master'
       )
+      // other user shouldn't reply
+      await superSes002.shouldNotReply('hello bot')
+    })
+
+    it('should installed koishi-plugin-demo plugin in group session', async () => {
+      await superSes001.shouldReply(
+        'kpm.i -c koishi-plugin-demo', '当前会话不是频道，无法使用 `group` 参数。'
+      )
+      await superSes001Chanel001.shouldReply(
+        'kpm.i -c koishi-plugin-demo', [
+          'installed koishi-plugin-demo',
+          '安装完成'
+        ]
+      )
+      // this channel able to use
+      await superSes001Chanel001.shouldReply(
+        'hello bot', 'hello master'
+      )
+      await superSes002Chanel001.shouldReply(
+        'hello bot', 'hello master'
+      )
+      // other channel unable to use
+      await superSes001Chanel002.shouldNotReply('hello bot')
+      await superSes002Chanel002.shouldNotReply('hello bot')
     })
 
     it('should installed koishi-plugin-demo plugin in global.', async () => {
       await superSes001.shouldReply(
-        'kpm.i -g demo', ['installed demo', '安装完成']
+        'kpm.i -g demo', [ 'installed demo', '安装完成' ]
       )
       // 检测是否安装到当前 session
       await superSes001.shouldReply(
@@ -112,7 +146,7 @@ describe('Manager plugin', () => {
 
       // test dup install bug
       await superSes001.shouldReply(
-        'kpm.i -g demo', ['installed demo', '安装完成']
+        'kpm.i -g demo', [ 'installed demo', '安装完成' ]
       )
       await superSes001.shouldReply(
         'hello bot', 'hello master'
