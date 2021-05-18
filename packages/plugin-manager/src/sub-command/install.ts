@@ -1,14 +1,11 @@
 import { Context, Command, Logger } from 'koishi-core'
 import { allPlugins } from '../core/Context'
-import { npmApi } from '../core/NpmApi'
-import path from 'path'
-import fs from 'fs'
-import { doCommand, searchPlugin } from '../index'
-import { Package, pluginService } from '../services/plugin'
+import { searchPlugin } from '../index'
+import { pluginService } from '../services/plugin'
 
 export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) => {
   cmd.subcommand(
-    '.install [...plugins] 安装插件'
+    '.install [...plugins]', '安装插件'
   ).usage(
     '安装插件到指定会话'
   ).alias(
@@ -50,47 +47,25 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
     }
     return '安装完成'
   }).subcommand(
-    '.remote [...plugins] 从远程安装插件(|依赖)'
-  ).alias(
-    ...[ 'remote', 'r' ].map(i => `kpm.i.${ i }`),
-    ...[ 'remote', 'r' ].map(i => `kpm.ins.${ i }`),
-    ...[ 'remote', 'r' ].map(i => `kpm.add.${ i }`)
+    '.remote [...plugins]', '从远程安装插件(|依赖)'
   ).action(async ({ session }, ...plugins) => {
-    const localPkgs = pluginService.localPlugins()
-    const waitInstallPlugins = []
-    for (let i = 0; i < plugins.length; i++) {
-      const pluginName = plugins[i]
-      try {
-        if (localPkgs.findIndex(pkg => pkg.name === pluginName) >= 0) {
-          await session.send(`本地已安装 ${pluginName}，无须重复安装。`)
-        } else {
-          const pkgData = await npmApi.get(pluginName)
-          const pkg = pkgData.collected.metadata
-          waitInstallPlugins.push(pkg.name)
-        }
-      } catch (e) {
-        if (e.message === 'Request failed with status code 404') {
-          await session.send(`远程不存在 ${pluginName}。`)
-        }
-      }
-    }
-
-    const waitInstallPluginsStr = waitInstallPlugins.join(' ')
-    await session.send(`${waitInstallPluginsStr} 正在安装.`)
-    const args = []
-    const absPath = path.resolve(
-      process.cwd(), './package.json'
-    )
-    const pkg = JSON.parse(fs.readFileSync(absPath).toString()) as Package
-    if (pkg.workspaces) {
-      args.push('-W')
-    }
+    const pluginsStr = plugins.join(', ')
     try {
-      await doCommand('yarn', [ 'add', ...args, ...waitInstallPlugins ])
-      await session.send(`${waitInstallPluginsStr} 安装完成.`)
+      await session.send(`${ pluginsStr } 安装中`)
+      const installedPlugins = await pluginService.installPlugins(plugins)
+      if (installedPlugins.length === 0) {
+        return '无依赖需要安装'
+      } else {
+        return `${ installedPlugins.join(', ') } 安装完毕.`
+      }
     } catch (e) {
-      await session.send(`${waitInstallPluginsStr} 安装失败.`)
-      await session.send(e)
+      await session.send(`${ pluginsStr } 安装失败.`)
+      // 安全起见，报错信息只私聊发送给用户
+      await session.bot.sendPrivateMessage(
+        session.userId,
+        `${new Date().toLocaleString()} 安装 ${ pluginsStr } 失败\n` +
+        `失败原因:\n ${ e }`
+      )
     }
   })
 }
