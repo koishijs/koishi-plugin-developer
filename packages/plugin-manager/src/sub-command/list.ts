@@ -31,7 +31,9 @@ export const registerListCmd = (ctx: Context, cmd: Command) => {
   }).subcommand(
     '.local'
   ).alias(
-    ...[ 'l' ].map(i => `kpm.list.${i}`)
+    ...[ 'l' ].map(i => `kpm.l.${ i }`),
+    ...[ 'l' ].map(i => `kpm.ls.${ i }`),
+    ...[ 'l' ].map(i => `kpm.list.${ i }`),
   ).action(() => {
     const pluginPkgs = pluginService.localPlugins()
     let returnMsg = `本地共检索到: ${ pluginPkgs.length }个依赖\n`
@@ -45,6 +47,8 @@ export const registerListCmd = (ctx: Context, cmd: Command) => {
   }).parent.subcommand(
     '.remote [query] 搜索远程插件(|依赖)'
   ).alias(
+    ...[ 'r' ].map(i => `kpm.l.${ i }`),
+    ...[ 'r' ].map(i => `kpm.ls.${ i }`),
     ...[ 'r' ].map(i => `kpm.list.${i}`)
   ).option(
     'page', '-p [page] 当前页码', { type: 'number', fallback: 0 }
