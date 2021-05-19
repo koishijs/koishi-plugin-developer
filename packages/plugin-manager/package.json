@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-manager",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "koishi plugin manager, help you to manager your bot's plugins.",
   "author": "yijie4188 <yijie4188@gmail.com>",
   "license": "MIT",
