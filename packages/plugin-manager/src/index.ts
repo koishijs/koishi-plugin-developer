@@ -6,6 +6,7 @@ import Router from '@koa/router'
 import KoaLogger from 'koa-logger'
 
 import './core/Context'
+import './core/Session'
 import path from 'path'
 import { registerInstallCmd } from './sub-command/install'
 import { registerUnInstallCmd } from './sub-command/uninstall'
