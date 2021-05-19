@@ -76,7 +76,7 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     'kpm <subCmd> [args...]', '插件管理工具', { authority: 4 }
   )
 
-  kpmCmd.subcommand = function hackSubcommand(def: string, ...args: any[]) {
+  kpmCmd.subcommand = function hackSubcommand(def: string, ...args: never[]) {
     const subcommand = Object.getPrototypeOf(this).subcommand.call(this, def, args)
     subcommand.action = function hackAction(callback, append = false) {
       return Object.getPrototypeOf(this).action.call(this, async (...args) => {

@@ -75,7 +75,7 @@ CtxProto.plugin = function <T extends Plugin>(
   return sourceContextMethods.plugin.call(this, plugin, options)
 }
 
-CtxProto.dispose = async function (plugin?: Plugin<any>): Promise<void> {
+CtxProto.dispose = async function (plugin?: Plugin<unknown>): Promise<void> {
   const ctxPlugins = allPlugins.get(allPlugins.searchCtx(
     plugin
   ))

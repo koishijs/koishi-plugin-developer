@@ -6,7 +6,6 @@
  */
 import { Command, Context } from 'koishi-core'
 import { doCommand, searchPlugin } from 'koishi-plugin-manager'
-import { npmApi } from '../core/NpmApi'
 
 export const registerUpgradeCmd = (ctx: Context, cmd: Command) => {
   const checkPlugin = (_argv, plugin) => {

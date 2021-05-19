@@ -6,6 +6,7 @@
  */
 import { Extend, Context, Session } from 'koishi-core'
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 type Options = Extend<Extend<{}, "channel", boolean>, "global", boolean>
 
 declare module 'koishi-core' {
