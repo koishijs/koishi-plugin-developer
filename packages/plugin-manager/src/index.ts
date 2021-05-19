@@ -69,8 +69,24 @@ export const apply = (ctx: Context, _config: Config = {}) => {
   _config = merge(_config, defaultConfig)
 
   const kpmCmd = ctx.command(
-    'kpm <subCmd> [args...] 插件管理工具。', { authority: 4 }
+    'kpm <subCmd> [args...]', '插件管理工具', { authority: 4 }
   )
+
+  kpmCmd.subcommand = function hackSubcommand(def: string, ...args: any[]) {
+    const subcommand = Object.getPrototypeOf(this).subcommand.call(this, def, args)
+    subcommand.action = function hackAction(callback, append = false) {
+      return Object.getPrototypeOf(this).action.call(this, async (...args) => {
+        try {
+          return await callback.call(this, ...args)
+        } catch (e) {
+          return e.message
+        }
+      }, append)
+    }
+    subcommand.subcommand = hackSubcommand
+    return subcommand
+  }
+
   registerInstallCmd(
     ctx, kpmCmd, logger
   )
