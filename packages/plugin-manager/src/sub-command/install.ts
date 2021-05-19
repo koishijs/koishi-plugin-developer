@@ -55,7 +55,7 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
     const pluginsStr = plugins.join(', ')
     try {
       await session.send(`${ pluginsStr } 安装中`)
-      const installedPlugins = await pluginService.installPlugins(plugins)
+      const installedPlugins = await pluginService.installFromRemote(plugins)
       if (installedPlugins.length === 0) {
         return '无依赖需要安装'
       } else {

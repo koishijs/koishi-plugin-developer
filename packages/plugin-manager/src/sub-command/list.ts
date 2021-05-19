@@ -35,7 +35,7 @@ export const registerListCmd = (ctx: Context, cmd: Command) => {
     ...[ 'l' ].map(i => `kpm.ls.${ i }`),
     ...[ 'l' ].map(i => `kpm.list.${ i }`),
   ).action(() => {
-    const pluginPkgs = pluginService.localPlugins()
+    const pluginPkgs = pluginService.listFromLocal()
     let returnMsg = `本地共检索到: ${ pluginPkgs.length }个依赖\n`
     pluginPkgs.forEach(pkg => {
       returnMsg += `${ pkg.name }[${ pkg.author }]\n`

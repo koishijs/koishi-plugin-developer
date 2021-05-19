@@ -57,7 +57,7 @@ export const router = (ctx: Context): Router => {
       return
     }
 
-    const localPlugins = pluginService.localPlugins(
+    const localPlugins = pluginService.listFromLocal(
       undefined, qs.q.split(' ').filter(s => s !== '')
     )
 
@@ -77,7 +77,7 @@ export const router = (ctx: Context): Router => {
     const { pluginName } = koaCtx.params as {
       pluginName: string
     }
-    const [ plugin ]= pluginService.localPlugins().filter(
+    const [ plugin ]= pluginService.listFromLocal().filter(
       pkg => new RegExp(`.*koishi-plugin-${ pluginName }`).test(pkg.name)
     )
     if (!plugin) {
