@@ -72,10 +72,7 @@ describe('Manager plugin', () => {
 
     it('should installed demo plugin in private session.', async () => {
       await superSes001.shouldReply(
-        'kpm.install demo', [
-          'installed demo',
-          '安装完成'
-        ]
+        'kpm.install demo', 'koishi-plugin-demo 安装完成'
       )
       await superSes001.shouldReply(
         'kpm.ls', '[√] demo\n'
@@ -89,10 +86,7 @@ describe('Manager plugin', () => {
 
     it('should installed koishi-plugin-demo plugin in private session.', async () => {
       await superSes001.shouldReply(
-        'kpm.i koishi-plugin-demo', [
-          'installed koishi-plugin-demo',
-          '安装完成'
-        ]
+        'kpm.i koishi-plugin-demo', 'koishi-plugin-demo 安装完成'
       )
       await superSes001.shouldReply(
         'hello bot', 'hello master'
@@ -106,10 +100,7 @@ describe('Manager plugin', () => {
         'kpm.i -c koishi-plugin-demo', '当前会话不是频道，无法使用 `group` 参数。'
       )
       await superSes001Chanel001.shouldReply(
-        'kpm.i -c koishi-plugin-demo', [
-          'installed koishi-plugin-demo',
-          '安装完成'
-        ]
+        'kpm.i -c koishi-plugin-demo', 'koishi-plugin-demo 安装完成'
       )
       // this channel able to use
       await superSes001Chanel001.shouldReply(
@@ -125,7 +116,7 @@ describe('Manager plugin', () => {
 
     it('should installed koishi-plugin-demo plugin in global.', async () => {
       await superSes001.shouldReply(
-        'kpm.i -g demo', [ 'installed demo', '安装完成' ]
+        'kpm.i -g demo', 'koishi-plugin-demo 安装完成'
       )
       // 检测是否安装到当前 session
       await superSes001.shouldReply(
@@ -146,17 +137,14 @@ describe('Manager plugin', () => {
 
       // test dup install bug
       await superSes001.shouldReply(
-        'kpm.i -g demo', [ 'installed demo', '安装完成' ]
-      )
-      await superSes001.shouldReply(
-        'hello bot', 'hello master'
+        'kpm.i -g demo', '当前会话已安装 demo'
       )
     })
 
     it('should have no demo01 plugin.', async () => {
       const pluginName = 'demo01'
       await superSes001.shouldReply(
-        `kpm.i -g ${pluginName}`, [`本地未安装 ${pluginName} / koishi-plugin-${pluginName}`, '安装完成']
+        `kpm.i -g ${pluginName}`, `本地未安装 ${pluginName} / koishi-plugin-${pluginName}`
       )
     })
   })
@@ -164,7 +152,7 @@ describe('Manager plugin', () => {
   describe('uninstall plugin', () => {
     it('should uninstall demo.', async () => {
       await superSes001.shouldReply(
-        'kpm.i demo', ['installed demo', '安装完成']
+        'kpm.i demo', 'koishi-plugin-demo 安装完成'
       )
       await superSes001.shouldReply(
         'kpm.uni demo', ['uninstalled demo', '卸载完成']
@@ -174,7 +162,7 @@ describe('Manager plugin', () => {
 
     it('should uninstall demo in channel.', async () => {
       await superSes001Chanel001.shouldReply(
-        'kpm.i -c demo', ['installed demo', '安装完成']
+        'kpm.i -c demo', 'koishi-plugin-demo 安装完成'
       )
       await superSes001Chanel001.shouldReply(
         'hello bot', 'hello master'
@@ -187,7 +175,7 @@ describe('Manager plugin', () => {
 
     it('should uninstall demo in global.', async () => {
       await superSes001.shouldReply(
-        'kpm.i -g demo', ['installed demo', '安装完成']
+        'kpm.i -g demo', 'koishi-plugin-demo 安装完成'
       )
       await superSes001.shouldReply(
         'hello bot', 'hello master'

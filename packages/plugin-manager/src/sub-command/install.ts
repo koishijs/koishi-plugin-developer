@@ -1,6 +1,4 @@
 import { Context, Command, Logger } from 'koishi-core'
-import { allPlugins } from '../core/Context'
-import { searchPlugin } from '../index'
 import { pluginService } from '../services/plugin'
 
 export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) => {
@@ -15,40 +13,23 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
   ).option(
     'global', '-g 全局', { type: 'boolean' }
   ).action(async ({ session, options }, ...plugins) => {
-    const sessionCtx = session.genSessionCtx(ctx, options)
-
-    for (let i = 0; i < plugins.length; i++) {
-      const pluginName = '' + plugins[i]
-      const data = searchPlugin(pluginName)
-
-      let msg
-      if (data !== null) {
-        const ctxPlugins = allPlugins.get(sessionCtx)
-        if (options.global) {
-          const plugins = allPlugins.plugins.filter(p => p.apply && p.apply === data.pluginModule.apply)
-          for (let j = 0; j < plugins.length; j++) {
-            await ctx.dispose(plugins[j])
-            const index = ctxPlugins.findIndex(val => val.plugin.apply === plugins[j].apply)
-            ctxPlugins.splice(index, 1)
-          }
-        }
-
-        const isInstalled = ctxPlugins && ctxPlugins.filter(
-          ctxPluginData => ctxPluginData.plugin?.apply && ctxPluginData.plugin?.apply === data.pluginModule?.apply
-        ).length >= 1
-        if (isInstalled) {
-          msg = `当前会话已安装 ${ pluginName }`
-        } else {
-          sessionCtx.plugin(data.pluginModule)
-          msg = `installed ${ pluginName }`
-        }
-      } else {
-        msg = `本地未安装 ${ pluginName } / koishi-plugin-${ pluginName }`
+    let key: keyof typeof session
+    const values = []
+    if (options.channel) {
+      if (!session.groupId) throw new Error('当前会话不是频道，无法使用 `group` 参数。')
+      key = 'groupId'
+      values.push(session.groupId)
+    } else {
+      if (!options.global) {
+        key = 'userId'
+        values.push(session.userId)
       }
-      await session.send(msg)
-      logger.info(msg)
     }
-    return '安装完成'
+    for (let i = 0; i < plugins.length; i++) {
+      const msg = await pluginService.installToSession([ plugins[i] ], key, values)
+      logger.info(msg)
+      await session.send(msg)
+    }
   }).subcommand(
     '.remote [...plugins]', '从远程安装插件(|依赖)'
   ).action(async ({ session }, ...plugins) => {

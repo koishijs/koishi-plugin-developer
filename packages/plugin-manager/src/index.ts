@@ -11,6 +11,7 @@ import path from 'path'
 import { registerInstallCmd } from './sub-command/install'
 import { registerUnInstallCmd } from './sub-command/uninstall'
 import { registerListCmd } from './sub-command/list'
+import { pluginService } from './services/plugin'
 
 // 插件名称
 export const name = 'manager'
@@ -67,6 +68,8 @@ export const doCommand = (
 export const apply = (ctx: Context, _config: Config = {}) => {
   const logger = ctx.logger(`koishi-plugin-${name}`)
   _config = merge(_config, defaultConfig)
+
+  pluginService.ctx = ctx
 
   const kpmCmd = ctx.command(
     'kpm <subCmd> [args...]', '插件管理工具', { authority: 4 }
