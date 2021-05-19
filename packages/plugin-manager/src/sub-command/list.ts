@@ -5,31 +5,27 @@ import { pluginService } from '../services/plugin'
 
 export const registerListCmd = (ctx: Context, cmd: Command) => {
   cmd.subcommand(
-    '.list 插件列表', { authority: 4 }
+    '.list', '插件列表'
   ).usage(
     '展示当前会话已安转的插件'
   ).alias(
     ...[ 'ls', 'l' ].map(i => `kpm.${i}`)
   ).option(
+    'channel', '-c 频道', { type: 'boolean' }
+  ).option(
     'global', '-g 全局', { type: 'boolean' }
   ).action(async ({ session, options }) => {
-    let sessionCtx = ctx.select(
-      'userId', session.userId
-    )
-    if (options.global) { sessionCtx = ctx.app }
+    const sessionCtx = session.genSessionCtx(ctx, options)
 
     let pluginsList = ''
-    const ctxPlugins = allPlugins.get(
-      sessionCtx
-    )
+    const ctxPlugins = allPlugins.get(sessionCtx)
     ctxPlugins && ctxPlugins.forEach(ctxPluginData => {
       const plugin = ctxPluginData.plugin
-      const name = plugin?.name ?? '未命名插件'
-      pluginsList += `[√] ${name}\n`
+      pluginsList += `[√] ${plugin?.name ?? '未命名插件'}\n`
     })
     return pluginsList === '' ? '暂无已安装的插件' : pluginsList
   }).subcommand(
-    '.local'
+    '.local', '展示本地插件'
   ).alias(
     ...[ 'l' ].map(i => `kpm.l.${ i }`),
     ...[ 'l' ].map(i => `kpm.ls.${ i }`),
@@ -45,7 +41,7 @@ export const registerListCmd = (ctx: Context, cmd: Command) => {
     })
     return returnMsg
   }).parent.subcommand(
-    '.remote [query] 搜索远程插件(|依赖)'
+    '.remote [query]', '搜索远程插件(|依赖)'
   ).alias(
     ...[ 'r' ].map(i => `kpm.l.${ i }`),
     ...[ 'r' ].map(i => `kpm.ls.${ i }`),
