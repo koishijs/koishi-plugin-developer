@@ -101,7 +101,7 @@ describe('Manager plugin', () => {
       await superSes002.shouldNotReply('hello bot')
     })
 
-    it('should installed koishi-plugin-demo plugin in group session.', async () => {
+    it('should installed koishi-plugin-demo plugin in channel session.', async () => {
       await superSes001.shouldReply(
         'kpm.i -c koishi-plugin-demo', '当前会话不是频道，无法使用 `group` 参数。'
       )
