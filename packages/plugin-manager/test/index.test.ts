@@ -101,7 +101,7 @@ describe('Manager plugin', () => {
       await superSes002.shouldNotReply('hello bot')
     })
 
-    it('should installed koishi-plugin-demo plugin in group session', async () => {
+    it('should installed koishi-plugin-demo plugin in group session.', async () => {
       await superSes001.shouldReply(
         'kpm.i -c koishi-plugin-demo', '当前会话不是频道，无法使用 `group` 参数。'
       )
@@ -170,6 +170,19 @@ describe('Manager plugin', () => {
         'kpm.uni demo', ['uninstalled demo', '卸载完成']
       )
       await superSes001.shouldNotReply('hello bot')
+    })
+
+    it('should uninstall demo in channel.', async () => {
+      await superSes001Chanel001.shouldReply(
+        'kpm.i -c demo', ['installed demo', '安装完成']
+      )
+      await superSes001Chanel001.shouldReply(
+        'hello bot', 'hello master'
+      )
+      await superSes001Chanel001.shouldReply(
+        'kpm.uni -c demo', ['uninstalled demo', '卸载完成']
+      )
+      await superSes001Chanel001.shouldNotReply('hello bot')
     })
 
     it('should uninstall demo in global.', async () => {

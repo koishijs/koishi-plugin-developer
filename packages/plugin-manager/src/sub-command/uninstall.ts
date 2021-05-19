@@ -10,12 +10,11 @@ export const registerUnInstallCmd = (ctx: Context, cmd: Command) => {
   ).alias(
     ...[ 'uni', 'un', 'unlink', 'remove', 'rm', 'r' ].map(i => `kpm.${i}`)
   ).option(
+    'channel', '-c 频道', { type: 'boolean' }
+  ).option(
     'global', '-g 全局', { type: 'boolean' }
   ).action(async ({ session, options }, ...plugins) => {
-    let sessionCtx = ctx.select(
-      'userId', session.userId
-    )
-    if (options.global) { sessionCtx = ctx.app }
+    const sessionCtx = session.genSessionCtx(ctx, options)
 
     for (let i = 0; i < plugins.length; i++) {
       const pluginName = '' + plugins[i]
