@@ -64,7 +64,7 @@ describe('Manager plugin', () => {
   })
 
   describe('install plugin', () => {
-    beforeEach(() => {
+    afterEach(() => {
       allPlugins.plugins.forEach(val => {
         val.apply !== manager.apply && app.dispose(val)
       })
@@ -162,6 +162,16 @@ describe('Manager plugin', () => {
   })
 
   describe('uninstall plugin', () => {
+    it('should uninstall demo.', async () => {
+      await superSes001.shouldReply(
+        'kpm.i demo', ['installed demo', '安装完成']
+      )
+      await superSes001.shouldReply(
+        'kpm.uni demo', ['uninstalled demo', '卸载完成']
+      )
+      await superSes001.shouldNotReply('hello bot')
+    })
+
     it('should uninstall demo in global.', async () => {
       await superSes001.shouldReply(
         'kpm.i -g demo', ['installed demo', '安装完成']
@@ -171,16 +181,6 @@ describe('Manager plugin', () => {
       )
       await superSes001.shouldReply(
         'kpm.uni -g demo', ['uninstalled demo', '卸载完成']
-      )
-      await superSes001.shouldNotReply('hello bot')
-    })
-
-    it('should uninstall demo.', async () => {
-      await superSes001.shouldReply(
-        'kpm.i demo', ['installed demo', '安装完成']
-      )
-      await superSes001.shouldReply(
-        'kpm.uni demo', ['uninstalled demo', '卸载完成']
       )
       await superSes001.shouldNotReply('hello bot')
     })
