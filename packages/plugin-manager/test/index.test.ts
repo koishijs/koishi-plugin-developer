@@ -141,6 +141,15 @@ describe('Manager plugin', () => {
       )
     })
 
+    it('should throw a error.', async () => {
+      await superSes001.shouldReply(
+        'kpm.i', '请输入待安装的插件'
+      )
+      await superSes001.shouldReply(
+        'kpm.i.remote', '请输入待安装的插件'
+      )
+    })
+
     it('should have no demo01 plugin.', async () => {
       const pluginName = 'demo01'
       await superSes001.shouldReply(

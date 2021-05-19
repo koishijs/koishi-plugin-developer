@@ -2,6 +2,10 @@ import { Context, Command, Logger } from 'koishi-core'
 import { pluginService } from '../services/plugin'
 
 export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) => {
+  const checkPlugin = (_argv, ...plugins) => {
+    if (plugins.length === 0) return '请输入待安装的插件'
+  }
+
   cmd.subcommand(
     '.install [...plugins]', '安装插件'
   ).usage(
@@ -12,7 +16,7 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
     'channel', '-c 频道', { type: 'boolean' }
   ).option(
     'global', '-g 全局', { type: 'boolean' }
-  ).action(async ({ session, options }, ...plugins) => {
+  ).check(checkPlugin).action(async ({ session, options }, ...plugins) => {
     let key: keyof typeof session
     const values = []
     if (options.channel) {
@@ -32,7 +36,7 @@ export const registerInstallCmd = (ctx: Context, cmd: Command, logger: Logger) =
     }
   }).subcommand(
     '.remote [...plugins]', '从远程安装插件(|依赖)'
-  ).action(async ({ session }, ...plugins) => {
+  ).check(checkPlugin).action(async ({ session }, ...plugins) => {
     const pluginsStr = plugins.join(', ')
     try {
       await session.send(`${ pluginsStr } 安装中`)
