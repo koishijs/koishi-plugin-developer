@@ -12,6 +12,7 @@ import { registerInstallCmd } from './sub-command/install'
 import { registerUnInstallCmd } from './sub-command/uninstall'
 import { registerListCmd } from './sub-command/list'
 import { pluginService } from './services/plugin'
+import { registerUpgradeCmd } from './sub-command/upgrade'
 
 // 插件名称
 export const name = 'manager'
@@ -97,6 +98,9 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     ctx, kpmCmd
   )
   registerListCmd(
+    ctx, kpmCmd
+  )
+  registerUpgradeCmd(
     ctx, kpmCmd
   )
 
