@@ -7,7 +7,6 @@ import { doCommand, searchPlugin } from 'koishi-plugin-manager'
 import { npmApi } from '../core/NpmApi'
 import { allPlugins } from '../core/Context'
 
-
 export type Package = {
   name: string
   version: string
