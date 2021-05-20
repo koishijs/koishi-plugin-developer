@@ -133,15 +133,16 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     }
   })
 
-  glob.sync(
-    `${ path.resolve(__dirname, './controllers') }/*.ts`
-  ).forEach(controller => {
-    const controllerModule: {
-      router(ctx: Context): Router
-    } = require(controller)
-
-    const r = controllerModule.router(ctx)
-    pluginRouter.use(r.routes(), r.allowedMethods())
-  })
-  ctx.router.use(pluginRouter.routes(), pluginRouter.allowedMethods())
+  ;(async () => {
+    const controllerModules: { router(ctx: Context): Router }[] = await Promise.all(
+      glob.sync(
+        `${ path.resolve(__dirname, './controllers') }/*.ts`
+      ).map(c => import(c))
+    )
+    controllerModules.forEach(controllerModule => {
+      const r = controllerModule.router(ctx)
+      pluginRouter.use(r.routes(), r.allowedMethods())
+    })
+    ctx.router.use(pluginRouter.routes(), pluginRouter.allowedMethods())
+  })()
 }
