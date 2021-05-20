@@ -73,7 +73,7 @@ export const apply = (ctx: Context, _config: Config = {}) => {
   pluginService.ctx = ctx
 
   const kpmCmd = ctx.command(
-    'kpm <subCmd> [args...]', '插件管理工具', { authority: 4 }
+    'kpm', '插件管理工具', { authority: 4 }
   )
 
   kpmCmd.subcommand = function hackSubcommand(def: string, ...args: never[]) {
