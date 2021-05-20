@@ -40,6 +40,10 @@ export const registerUpgradeCmd = (ctx: Context, cmd: Command) => {
     if (p === null) {
       return `本地未安装该插件，请使用 \`kpm.ins.remote ${ plugin }\` 从远程服务器安装`
     }
+    await session.send('更新将从全局卸载该插件，请确认是否继续')
+    if ([ 'no', 'n', '否', '不要', '不确认', '不' ].includes(await session.prompt(10000))) {
+      return '更新结束'
+    }
     // uninstall plugin in global
     await session.execute(`kpm.uni -g ${ plugin }`)
     try {
@@ -51,6 +55,7 @@ export const registerUpgradeCmd = (ctx: Context, cmd: Command) => {
       await doCommand(
         'yarn', [ 'upgrade', plugin, ...argv ]
       )
+      return `${ plugin } 更新完毕`
     } catch (e) {
       await session.send(`${ plugin } 更新失败.`)
       // 安全起见，报错信息只私聊发送给用户
