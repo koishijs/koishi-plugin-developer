@@ -27,10 +27,13 @@ declare module 'koishi-core' {
 }
 
 // 插件配置
-interface Config { }
+interface Config {
+  restfulApi?: boolean
+}
 
 // 插件默认配置
 const defaultConfig: Config = {
+  restfulApi: false
 }
 
 export const searchPlugin = (plugin: string): {
@@ -66,9 +69,9 @@ export const doCommand = (
   })
 })
 
-export const apply = (ctx: Context, _config: Config = {}) => {
+export const apply = (ctx: Context, config: Config = {}) => {
   const logger = ctx.logger(`koishi-plugin-${name}`)
-  _config = merge(_config, defaultConfig)
+  config = merge(config, defaultConfig)
 
   pluginService.ctx = ctx
 
@@ -104,45 +107,47 @@ export const apply = (ctx: Context, _config: Config = {}) => {
     ctx, kpmCmd
   )
 
-  const pluginRouter = new Router({
-    prefix: `/plugin-apis/${ name }`
-  })
-  pluginRouter[Context.current] = ctx
-  pluginRouter.all(
-    '/(.*)', KoaLogger(str => logger.info(str))
-  )
-  pluginRouter.all('/(.*)', async (koaCtx, next) => {
-    try {
-      await next()
-    } catch (e) {
-      const re = /^\[(.*)]:(.*)$/
-      if (e instanceof Error && typeof e.message === 'string' && re.test(e.message)) {
-        const [
-          _allMsg, status, msg
-        ] = re[Symbol.match](e.message)
-        if (status && msg) {
-          koaCtx.status = +status
-          koaCtx.body = msg
+  if (config.restfulApi) {
+    const pluginRouter = new Router({
+      prefix: `/plugin-apis/${ name }`
+    })
+    pluginRouter[Context.current] = ctx
+    pluginRouter.all(
+      '/(.*)', KoaLogger(str => logger.info(str))
+    )
+    pluginRouter.all('/(.*)', async (koaCtx, next) => {
+      try {
+        await next()
+      } catch (e) {
+        const re = /^\[(.*)]:(.*)$/
+        if (e instanceof Error && typeof e.message === 'string' && re.test(e.message)) {
+          const [
+            _allMsg, status, msg
+          ] = re[Symbol.match](e.message)
+          if (status && msg) {
+            koaCtx.status = +status
+            koaCtx.body = msg
+          } else {
+            throw e
+          }
+          logger.error(e)
         } else {
           throw e
         }
-        logger.error(e)
-      } else {
-        throw e
       }
-    }
-  })
-
-  ;(async () => {
-    const controllerModules: { router(ctx: Context): Router }[] = await Promise.all(
-      glob.sync(
-        `${ path.resolve(__dirname, './controllers') }/*.ts`
-      ).map(c => import(c))
-    )
-    controllerModules.forEach(controllerModule => {
-      const r = controllerModule.router(ctx)
-      pluginRouter.use(r.routes(), r.allowedMethods())
     })
-    ctx.router.use(pluginRouter.routes(), pluginRouter.allowedMethods())
-  })()
+
+    ;(async () => {
+      const controllerModules: { router(ctx: Context): Router }[] = await Promise.all(
+        glob.sync(
+          `${ path.resolve(__dirname, './controllers') }/*.ts`
+        ).map(c => require(c))
+      )
+      controllerModules.forEach(controllerModule => {
+        const r = controllerModule.router(ctx)
+        pluginRouter.use(r.routes(), r.allowedMethods())
+      })
+      ctx.router.use(pluginRouter.routes(), pluginRouter.allowedMethods())
+    })()
+  }
 }
