@@ -30,4 +30,8 @@ export const apply = (ctx: Context, _config: Config = {}) => {
       await session.send('hello master')
     }
   })
+
+  ctx.command(
+    'test'
+  ).action(async () => 'this is a test command.')
 }
