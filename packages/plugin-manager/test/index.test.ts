@@ -106,12 +106,25 @@ describe('Manager plugin', () => {
       await superSes001Chanel001.shouldReply(
         'hello bot', 'hello master'
       )
+      await superSes001Chanel001.shouldReply(
+        'test', 'this is a test command.'
+      )
       await superSes002Chanel001.shouldReply(
         'hello bot', 'hello master'
       )
       // other channel unable to use
       await superSes001Chanel002.shouldNotReply('hello bot')
       await superSes002Chanel002.shouldNotReply('hello bot')
+
+      await superSes001Chanel002.shouldReply(
+        'kpm.i -c koishi-plugin-demo', 'koishi-plugin-demo 安装完成'
+      )
+      await superSes002Chanel002.shouldReply(
+        'hello bot', 'hello master'
+      )
+      await superSes002Chanel002.shouldReply(
+        'test', 'this is a test command.'
+      )
     })
 
     it('should installed koishi-plugin-demo plugin in global.', async () => {
