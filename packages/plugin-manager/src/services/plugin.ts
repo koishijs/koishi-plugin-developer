@@ -40,7 +40,7 @@ export const pluginService = {
    * install plugins to session
    *
    * @param plugins { string[] }     - wait install plugins
-   * @param key     { K }            - select session type
+   * @param key     { K }            - select session type, if `key === undefined`, will select global ctx
    * @param values  { Session[K][] } - select value of session
    */
   async installToSession<K extends keyof Session>(
