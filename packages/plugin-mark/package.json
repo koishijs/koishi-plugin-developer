@@ -1,0 +1,25 @@
+{
+  "name": "koishi-plugin-mark",
+  "version": "1.0.0",
+  "description": "record user mark data.",
+  "author": "yijie",
+  "license": "MIT",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+  },
+  "dependencies": {
+    "dayjs": "^1.10.6",
+    "koishi-utils": "^4.2.2"
+  },
+  "devDependencies": {
+    "koishi-plugin-mysql": "^3.3.2",
+    "koishi-plugin-mongo": "^2.2.3"
+  },
+  "keywords": [
+    "qqbot", "cqhttp", "coolq",
+    "bot", "chatbot",
+    "koishi", "plugin"
+  ]
+}
