@@ -1,9 +1,11 @@
-import { App } from 'koishi-test-utils'
-import * as mark from 'koishi-plugin-mark'
-import { calendar } from 'koishi-plugin-mark'
-import { expect } from 'chai'
-import { MarkTable } from '../src/database'
 import { User } from 'koishi-core'
+import { App } from 'koishi-test-utils'
+
+import { expect } from 'chai'
+import * as MockDate from 'mockdate'
+
+import * as mark from 'koishi-plugin-mark'
+import { calendar, MarkTable } from 'koishi-plugin-mark'
 
 describe('Mark Plugin', () => {
   const app = new App({
@@ -15,7 +17,7 @@ describe('Mark Plugin', () => {
     await app.database.initUser('001', 4)
     await app.database.initUser('002', 4)
   })
-  beforeEach(() => {
+  afterEach(() => {
     app.database.memory.$store['mark'] = []
   })
 
@@ -30,33 +32,34 @@ describe('Mark Plugin', () => {
     })
 
     it('should list marks.', async () => {
+      MockDate.set(new Date('2021-07-23'))
       app.database.memory.$store['mark'] = [
-        { ctime: new Date('2021-05-17') },
-        { ctime: new Date('2021-06-17') },
-        { ctime: new Date('2021-07-17') },
-        { ctime: new Date('2021-07-18') },
-        { ctime: new Date('2021-07-20') },
-        { ctime: new Date('2021-07-21') }
-      ].map(i => new Object({
-        id: 1, uid: 'mock:001', ctime: i.ctime
+        '2021-05-17',
+        '2021-06-17',
+        '2021-07-17',
+        '2021-07-18',
+        '2021-07-20',
+        '2021-07-21'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(ctime)
       }) as MarkTable)
       await superSes1.shouldReply('mark.list', '' +
         '1 2 3 4 5 6 7 \n'+
-        '        □ ■ ■ \n'+
-        '□ ■ ■ □       '
+        '          ■ ■ \n'+
+        '□ ■ ■ □ □     '
       )
       await superSes1.shouldReply('mark.list -m', '' +
         '1 2 3 4 5 6 7 \n'+
-        '    □ □ □ □ □ \n'+
+        '      □ □ □ □ \n'+
         '□ □ □ □ □ □ □ \n'+
         '□ □ □ □ □ □ □ \n'+
         '□ □ □ □ □ ■ ■ \n'+
-        '□ ■ ■ □       '
+        '□ ■ ■ □ □     '
       )
       await superSes1.shouldReply('mark.list -d 10', '' +
         '1 2 3 4 5 6 7 \n'+
-        '  □ □ □ □ ■ ■ \n'+
-        '□ ■ ■ □       '
+        '    □ □ □ ■ ■ \n'+
+        '□ ■ ■ □ □     '
       )
       await superSes1.shouldReply('mark.list -d asdas', '选项 days 输入无效，请提供一个数字。')
     })
@@ -74,7 +77,7 @@ describe('Mark Plugin', () => {
       await superSes1.shouldReply('mark', '2-mark success1')
     })
 
-    it('should get statistical data ', async () => {
+    it('should get statistical data. ', async () => {
       const markUsers: User[] = []
       app.on('mark/user-mark', async (_, _mark, data) => {
         expect((await data.global.all.users).map(
@@ -87,25 +90,58 @@ describe('Mark Plugin', () => {
       markUsers.push(await app.database.getUser('mock', '002'))
       await superSes2.shouldReply('mark', '2-1')
     })
+
+    it('should get statistical data by time range.', async () => {
+      MockDate.set(new Date('2021-07-23'))
+      app.database.memory.$store['mark'] = [
+        '2020-05-16',
+        '2020-05-17',
+        '2021-06-17',
+        '2021-07-17',
+        '2021-07-18',
+        '2021-07-20',
+        '2021-07-21'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(ctime)
+      }) as MarkTable)
+      app.database.memory.$store['mark'].push(
+        ...[
+          '2021-07-21', '2021-07-22'
+        ].map((ctime, index) => new Object({
+          id: index + 1, uid: '2', ctime: new Date(ctime)
+        }) as MarkTable)
+      )
+      app.on('mark/user-mark', async (_, _mark, data) => {
+        expect(await data.global.month.count).to.eq(4 + 3)
+        expect(await data.users['1'].month.count).to.eq(4)
+        expect(await data.users['2'].month.count).to.eq(3)
+        expect(await data.global.day.count).to.eq(1)
+        expect(await data.users['1'].day.count).to.eq(0)
+        expect(await data.users['2'].day.count).to.eq(1)
+        return 'none'
+      })
+      await superSes2.shouldReply('mark', 'none')
+    });
   })
 
   it('should return right calendar.', () => {
+    MockDate.set(new Date('2021-07-23'))
     expect(
       calendar([
-        { ctime: new Date('2021-05-17') },
-        { ctime: new Date('2021-06-17') },
-        { ctime: new Date('2021-07-17') },
-        { ctime: new Date('2021-07-18') },
-        { ctime: new Date('2021-07-20') },
-        { ctime: new Date('2021-07-21') }
-      ].map(i => i.ctime), 31)
+        new Date('2021-05-17'),
+        new Date('2021-06-17'),
+        new Date('2021-07-17'),
+        new Date('2021-07-18'),
+        new Date('2021-07-20'),
+        new Date('2021-07-21')
+      ], 31)
     ).to.have.members([
       '1 2 3 4 5 6 7 ',
-      '  □ □ □ □ □ □ ',
+      '    □ □ □ □ □ ',
       '□ □ □ □ □ □ □ ',
       '□ □ □ □ □ □ □ ',
       '□ □ □ □ □ ■ ■ ',
-      '□ ■ ■ □       '
+      '□ ■ ■ □ □     '
     ])
   })
 })

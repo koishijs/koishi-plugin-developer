@@ -1,9 +1,13 @@
 import { Context, segment, Tables, User } from 'koishi-core'
 import { merge } from 'koishi-utils'
 
+import dayjs from 'dayjs'
+
 import { MarkTable } from './database'
 import { Config, defaultConfig } from './config'
-import dayjs from 'dayjs'
+
+export { MarkTable } from './database'
+export * from './config'
 
 export const name = 'mark'
 
@@ -44,15 +48,15 @@ export const calendar = (
   const output: string[] = []
   let point = arr.length - 1
   let count = 0
+  const curDayTomorrow = dayjs().subtract(-1, 'd')
   const genSymbols = (startDay: dayjs.Dayjs, endDay: dayjs.Dayjs) => {
     const symbols: string[] = []
     for (let i = 0; i < 7; i++) {
-      let symbol = startDay.isBefore(dayjs()) ? '□':' '
+      // it should check day as the beginning of tomorrow
+      let symbol = startDay.isBefore(curDayTomorrow) ? '□':' '
       if (point >= 0 && startDay.isSame(
         arr[point], 'days'
-      )) {
-        symbol = '■'; point--
-      }
+      )) { symbol = '■'; point-- }
       if (startDay.isBefore(endDay)) symbol = ' '
       if (symbol !== ' ') count++
       symbols.unshift(`${symbol} `)
@@ -62,12 +66,13 @@ export const calendar = (
     return symbols.join('')
   }
   const weekend = dayjs().endOf('w')
+  const viewEndDay = dayjs().subtract(
+    viewRangeDay - 1, 'd'
+  )
   for (let i = 0; (point > 0 && count < viewRangeDay) || count < viewRangeDay; i++) {
     output.unshift(genSymbols(
       weekend.subtract(i, 'w')
-        .subtract(-1, 'd'),
-      dayjs()
-        .subtract(viewRangeDay, 'd')
+        .subtract(-1, 'd'), viewEndDay
     ))
   }
   output.unshift('1 2 3 4 5 6 7 ')
@@ -76,14 +81,38 @@ export const calendar = (
 
 export const apply = (ctx: Context, config: Config = {}) => {
   const db = ctx.database
-  const logger = ctx.logger(`koishi-plugin-${name}`)
+  const _logger = ctx.logger(`koishi-plugin-${name}`)
   config = merge(config, defaultConfig)
 
   const queryStatisticalData = (
     timeRange: Mark.StatisticalTimeRangeKeys, key: keyof Mark.UserStat | 'users',
     uids?: User['id'][]
   ) => {
-    const query: Tables.Query<'mark'> = uids ? { uid: uids } : {}
+    const query: Tables.Query<'mark'> = {}
+    if (uids) query['uid'] = uids
+    switch (timeRange) {
+      case 'day':
+        query['ctime'] = {
+          $gte: dayjs().startOf('d').toDate()
+        }
+        break
+      case 'week':
+        query['ctime'] = {
+          $gte: dayjs().subtract(7, 'd').toDate()
+        }
+        break
+      case 'month':
+        query['ctime'] = {
+          $gte: dayjs().subtract(30, 'd').toDate()
+        }
+        break
+      case 'year':
+        query['ctime'] = {
+          $gte: dayjs().subtract(365, 'd').toDate()
+        }
+        break
+    }
+    query['ctime']['$lte'] = dayjs().toDate()
     switch (key) {
       case 'items':
         return db.get('mark', query)
@@ -135,12 +164,15 @@ export const apply = (ctx: Context, config: Config = {}) => {
     'quarter', '-q 90天内', { type: 'boolean' }
   ).option(
     'days', '-d <days> 指定天数', { type: 'number' }
-  ).action(async ({ session, options }) => {
-    const marks = await db.get('mark', { uid: [ session.uid ] })
+  ).userFields([ 'id' ]).action(async ({ session, options }) => {
     let day = 7
     if (options.month) day = 30
     if (options.quarter) day = 90
     if (options.days) day = +options.days
+    const marks = await db.get('mark', {
+      uid: [ session.user.id ],
+      ctime: { $gt: dayjs().subtract(day, 'd').toDate() }
+    })
     return calendar(marks.map(i => i.ctime), day).join('\n')
   })
 }
