@@ -5,7 +5,7 @@ import { expect } from 'chai'
 import * as MockDate from 'mockdate'
 
 import * as mark from 'koishi-plugin-mark'
-import { calendar, MarkTable } from 'koishi-plugin-mark'
+import { calendar, continuous, MarkTable } from 'koishi-plugin-mark'
 
 describe('Mark Plugin', () => {
   const app = new App({
@@ -121,7 +121,25 @@ describe('Mark Plugin', () => {
         return 'none'
       })
       await superSes2.shouldReply('mark', 'none')
-    });
+    })
+
+    it('should get continuous data', async () => {
+      MockDate.set(new Date('2021-07-23'))
+      app.database.memory.$store['mark'] = [
+        '2021-07-15',               '2021-07-17', '2021-07-18',
+        '2021-07-19', '2021-07-20', '2021-07-21', '2021-07-22'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(ctime)
+      }) as MarkTable)
+      app.on('mark/user-mark', async (_, mark, data) => {
+        return `已连续打卡 ${
+          data.users[mark.uid].all.continuous
+        } 天， 共打卡 ${
+          data.users[mark.uid].all.count
+        } 次。`
+      })
+      await superSes1.shouldReply('mark', '已连续打卡 ${} 天， 共打卡 ${} 次。')
+    })
   })
 
   it('should return right calendar.', () => {
@@ -143,5 +161,33 @@ describe('Mark Plugin', () => {
       '□ □ □ □ □ ■ ■ ',
       '□ ■ ■ □ □     '
     ])
+  })
+
+  it('should calc continuous static data.', () => {
+    MockDate.set(new Date('2021-07-23'))
+    let result: ReturnType<typeof continuous>
+    result = continuous([
+      '2021-07-15',               '2021-07-17', '2021-07-18',
+      '2021-07-19', '2021-07-20', '2021-07-21', '2021-07-22'
+    ].map(ctime => new Date(ctime)))
+    expect(result).to.have.property('count', 6)
+    expect(result).to.have.property('offset', 1)
+    result = continuous([
+      '2021-07-15',               '2021-07-17', '2021-07-18',
+      '2021-07-19', '2021-07-20', '2021-07-21', '2021-07-22',
+      '2021-07-23'
+    ].map(ctime => new Date(ctime)))
+    expect(result).to.have.property('count', 7)
+    expect(result).to.have.property('offset', 0)
+    result = continuous([
+      '2021-07-15',               '2021-07-17', '2021-07-18'
+    ].map(ctime => new Date(ctime)))
+    expect(result).to.have.property('count', 2)
+    expect(result).to.have.property('offset', 5)
+    result = continuous([
+      '2020-07-15',               '2020-07-17', '2020-07-18'
+    ].map(ctime => new Date(ctime)))
+    expect(result).to.have.property('count', 2)
+    expect(result).to.have.property('offset', 370)
   })
 })

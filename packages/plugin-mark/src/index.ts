@@ -30,15 +30,17 @@ export namespace Mark {
   export type TimeRangeStat<T> = {
     [key in StatisticalTimeRangeKeys]: T
   }
-  export type UserStat = {
+  export type BaseStat = {
     readonly items: Promise<MarkTable>
     readonly count: Promise<number>
   }
   export interface StatisticalData {
-    global: TimeRangeStat<UserStat & {
+    global: TimeRangeStat<BaseStat & {
       readonly users: Promise<User[]>
     }>
-    users: Record<string, TimeRangeStat<UserStat>>
+    users: Record<string, TimeRangeStat<BaseStat & {
+      readonly continuous: Promise<number>
+    }>>
   }
 }
 
@@ -79,13 +81,41 @@ export const calendar = (
   return output
 }
 
+export const continuous = (arr: Date[]): {
+  offset: number; count: number
+} => {
+  const result = {
+    offset: 0, count: 0
+  }
+  if (arr.length === 0) return result
+
+  arr.sort(
+    (a, b) => a > b ? 1 : -1
+  )
+  const lastDay = dayjs(arr[arr.length - 1]).startOf('d')
+  result.offset = dayjs().diff(lastDay, 'd')
+  result.count++
+
+  let prevDay = lastDay
+  for (let i = arr.length - 2; i >= 0; i--) {
+    const cur = dayjs(arr[i]).startOf('d')
+    if (cur.subtract(-1, 'd').isSame(prevDay)) {
+      result.count++
+    } else {
+      break
+    }
+    prevDay = cur
+  }
+  return result
+}
+
 export const apply = (ctx: Context, config: Config = {}) => {
   const db = ctx.database
   const _logger = ctx.logger(`koishi-plugin-${name}`)
   config = merge(config, defaultConfig)
 
   const queryStatisticalData = (
-    timeRange: Mark.StatisticalTimeRangeKeys, key: keyof Mark.UserStat | 'users',
+    timeRange: Mark.StatisticalTimeRangeKeys, key: keyof Mark.BaseStat | 'users' | 'continuous',
     uids?: User['id'][]
   ) => {
     const query: Tables.Query<'mark'> = {}
@@ -122,13 +152,15 @@ export const apply = (ctx: Context, config: Config = {}) => {
         return db.get('mark', query, [ 'uid' ])
           .then(marks => marks.map(m => m.uid))
           .then(uids => db.get('user', { id: uids }))
+      case 'continuous':
+        break
     }
   }
 
   const genQueryProxy = (uids?: User['id'][]) => new Proxy({}, {
     get(_, timeRange: Mark.StatisticalTimeRangeKeys) {
       return new Proxy({}, {
-        get(_, key: keyof Mark.UserStat | 'users') {
+        get(_, key: keyof Mark.BaseStat | 'users' | 'continuous') {
           return queryStatisticalData(timeRange, key, uids)
         }
       })
