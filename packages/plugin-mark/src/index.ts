@@ -141,6 +141,9 @@ export const apply = (ctx: Context, config: Config = {}) => {
           $gte: dayjs().subtract(365, 'd').toDate()
         }
         break
+      default:
+        query['ctime'] = {}
+        break
     }
     query['ctime']['$lte'] = dayjs().toDate()
     switch (key) {
@@ -153,7 +156,11 @@ export const apply = (ctx: Context, config: Config = {}) => {
           .then(marks => marks.map(m => m.uid))
           .then(uids => db.get('user', { id: uids }))
       case 'continuous':
-        break
+        return (async () => {
+          const marks = await db.get('mark', query, [ 'ctime' ])
+          const result = continuous(marks.map(mark => mark.ctime))
+          return result.offset <= 1 ? result.count : 0
+        })()
     }
   }
 

@@ -125,20 +125,39 @@ describe('Mark Plugin', () => {
 
     it('should get continuous data', async () => {
       MockDate.set(new Date('2021-07-23'))
+      app.on('mark/user-mark', async (_, mark, data) => {
+        return `七天内已连续打卡 ${
+          await data.users[mark.uid].week.continuous
+        } 天， 共已连续打卡 ${
+          await data.users[mark.uid].all.continuous
+        } 天， 共打卡 ${
+          await data.users[mark.uid].all.count
+        } 次。`
+      })
+
       app.database.memory.$store['mark'] = [
         '2021-07-15',               '2021-07-17', '2021-07-18',
         '2021-07-19', '2021-07-20', '2021-07-21', '2021-07-22'
       ].map((ctime, index) => new Object({
         id: index + 1, uid: '1', ctime: new Date(ctime)
       }) as MarkTable)
-      app.on('mark/user-mark', async (_, mark, data) => {
-        return `已连续打卡 ${
-          data.users[mark.uid].all.continuous
-        } 天， 共打卡 ${
-          data.users[mark.uid].all.count
-        } 次。`
-      })
-      await superSes1.shouldReply('mark', '已连续打卡 ${} 天， 共打卡 ${} 次。')
+      await superSes1.shouldReply('mark', '七天内已连续打卡 7 天， 共已连续打卡 7 天， 共打卡 8 次。')
+
+      app.database.memory.$store['mark'] = [
+        '2021-07-15',               '2021-07-17', '2021-07-18',
+        '2021-07-19', '2021-07-20', '2021-07-21'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(ctime)
+      }) as MarkTable)
+      await superSes1.shouldReply('mark', '七天内已连续打卡 1 天， 共已连续打卡 1 天， 共打卡 7 次。')
+
+      app.database.memory.$store['mark'] = [
+        '2021-07-15', '2021-07-16',               '2021-07-18',
+        '2021-07-19', '2021-07-20', '2021-07-21', '2021-07-22'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(ctime)
+      }) as MarkTable)
+      await superSes1.shouldReply('mark', '七天内已连续打卡 6 天， 共已连续打卡 6 天， 共打卡 8 次。')
     })
   })
 
