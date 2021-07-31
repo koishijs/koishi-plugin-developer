@@ -31,6 +31,15 @@ describe('Mark Plugin', () => {
       )
     })
 
+    it('should limit current mark count.', async () => {
+      await superSes1.shouldReply(
+        'mark', '[CQ:at,id=mock:001]，打卡成功'
+      )
+      await superSes1.shouldReply(
+        'mark', '已超过了今日的打卡次数上限'
+      )
+    })
+
     it('should list marks.', async () => {
       MockDate.set(new Date('2021-07-23'))
       app.database.memory.$store['mark'] = [

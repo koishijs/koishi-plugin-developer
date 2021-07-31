@@ -187,7 +187,13 @@ export const apply = (ctx: Context, config: Config = {}) => {
     ...config.markAliases
   ).userFields([
     'id'
-  ]).action(async ({ session }) => {
+  ]).check(async ({ session }) => {
+    if (
+      await statisticalData
+        .users[session.user.id]
+        .day.count === config.markCountLimit
+    ) return config.msgs['overflowMarkCountLimit']
+  }).action(async ({ session }) => {
     const mark = await db.create('mark', { uid: session.user.id, ctime: new Date() })
     return ctx.waterfall(
       'mark/user-mark', `${segment.at(session.uid)}，打卡成功`, mark, statisticalData
