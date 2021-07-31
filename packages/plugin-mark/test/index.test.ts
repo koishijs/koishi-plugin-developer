@@ -83,7 +83,7 @@ describe('Mark Plugin', () => {
 
       listener = async (_, mark, _data) => `${mark.id}-mark success1`
       app.on('mark/user-mark', listener)
-      await superSes1.shouldReply('mark', '2-mark success1')
+      await superSes2.shouldReply('mark', '2-mark success1')
     })
 
     it('should get statistical data. ', async () => {
