@@ -11,11 +11,12 @@
   },
   "dependencies": {
     "dayjs": "^1.10.6",
-    "koishi-utils": "^4.2.2"
+    "koishi-utils": "^4.2.3"
   },
   "devDependencies": {
+    "koishi-plugin-mongo": "^2.2.3",
     "koishi-plugin-mysql": "^3.3.2",
-    "koishi-plugin-mongo": "^2.2.3"
+    "mockdate": "^3.0.5"
   },
   "keywords": [
     "qqbot", "cqhttp", "coolq",
