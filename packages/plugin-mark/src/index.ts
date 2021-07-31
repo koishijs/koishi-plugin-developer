@@ -213,6 +213,13 @@ export const apply = (ctx: Context, config: Config = {}) => {
       uid: [ session.user.id ],
       ctime: { $gt: dayjs().subtract(day, 'd').toDate() }
     })
-    return calendar(marks.map(i => i.ctime), day).join('\n')
+
+    const calendarArr = calendar(marks.map(i => i.ctime), day)
+    // @ts-ignore
+    if (session.platform === 'onebot') {
+      calendarArr[1] = ' '.repeat(calendarArr[1].indexOf('□')/2) + calendarArr[1]
+      return calendarArr.join('\n')
+    }
+    return calendarArr.join('\n')
   })
 }
