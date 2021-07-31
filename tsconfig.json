@@ -11,9 +11,9 @@
   "include": [
     "cli/**/*.ts",
     "src/**/*.ts",
-    "tests/**/*.ts",
+    "test/**/*.ts",
     "src/**/*.tsx",
-    "tests/**/*.tsx"
+    "test/**/*.tsx"
   ],
   "exclude": [
     "node_modules"
