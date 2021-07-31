@@ -33,10 +33,10 @@
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
-    "koishi": "3.11.0",
-    "koishi-core": "3.11.0",
-    "koishi-adapter-onebot": "^3.0.9",
-    "koishi-utils": "^4.2.2",
+    "koishi": "^3.13.0",
+    "koishi-core": "^3.13.0",
+    "koishi-adapter-onebot": "^3.1.0",
+    "koishi-utils": "^4.2.3",
     "regenerator-runtime": "^0.13.7",
     "tslib": "^2.2.0"
   },
@@ -60,7 +60,7 @@
     "eslint": "^7.25.0",
     "eslint-plugin-mocha": "^8.1.0",
     "inquirer": "^8.0.0",
-    "koishi-test-utils": "^6.0.0",
+    "koishi-test-utils": "^6.1.0",
     "mocha": "^8.3.2",
     "nodemon": "^2.0.7",
     "rollup": "^2.47.0",
