@@ -1,4 +1,4 @@
-import { Context, segment, Tables, User } from 'koishi-core'
+import { Context, segment, Query, User } from 'koishi-core'
 import { merge } from 'koishi-utils'
 
 import dayjs from 'dayjs'
@@ -118,7 +118,7 @@ export const apply = (ctx: Context, config: Config = {}) => {
     timeRange: Mark.StatisticalTimeRangeKeys, key: keyof Mark.BaseStat | 'users' | 'continuous',
     uids?: User['id'][]
   ) => {
-    const query: Tables.Query<'mark'> = {}
+    const query: Query<'mark'> = {}
     if (uids) query['uid'] = uids
     switch (timeRange) {
       case 'day':

@@ -1,4 +1,4 @@
-import { User } from 'koishi-core'
+import { EventMap, User } from 'koishi-core'
 import { App } from 'koishi-test-utils'
 
 import { expect } from 'chai'
@@ -66,27 +66,30 @@ describe('Mark Plugin', () => {
   })
 
   describe('Event', () => {
+    let listener: EventMap['mark/user-mark']
     it('should return new string.', async () => {
-      app.on(
-        'mark/user-mark', async (_, mark, _data) => `${mark.id}-mark success`
-      )
+      listener = async (_, mark, _data) => `${mark.id}-mark success`
+      app.once('mark/user-mark', listener)
       await superSes1.shouldReply('mark', '1-mark success')
-      app.on(
-        'mark/user-mark', async (_, mark, _data) => `${mark.id}-mark success1`
-      )
+
+      listener = async (_, mark, _data) => `${mark.id}-mark success1`
+      app.on('mark/user-mark', listener)
       await superSes1.shouldReply('mark', '2-mark success1')
     })
 
     it('should get statistical data. ', async () => {
       const markUsers: User[] = []
-      app.on('mark/user-mark', async (_, _mark, data) => {
+      const listener = async (_, _mark, data) => {
         expect((await data.global.all.users).map(
           user => user.id
         )).to.have.members(markUsers.map(user => user.id))
         return `${await data.global.all.count}-${await data.users['1'].all.count}`
-      })
+      }
+      app.once('mark/user-mark', listener)
       markUsers.push(await app.database.getUser('mock', '001'))
       await superSes1.shouldReply('mark', '1-1')
+
+      app.once('mark/user-mark', listener)
       markUsers.push(await app.database.getUser('mock', '002'))
       await superSes2.shouldReply('mark', '2-1')
     })
@@ -111,7 +114,8 @@ describe('Mark Plugin', () => {
           id: index + 1, uid: '2', ctime: new Date(ctime)
         }) as MarkTable)
       )
-      app.on('mark/user-mark', async (_, _mark, data) => {
+
+      listener = async (_, _mark, data) => {
         expect(await data.global.month.count).to.eq(4 + 3)
         expect(await data.users['1'].month.count).to.eq(4)
         expect(await data.users['2'].month.count).to.eq(3)
@@ -119,13 +123,15 @@ describe('Mark Plugin', () => {
         expect(await data.users['1'].day.count).to.eq(0)
         expect(await data.users['2'].day.count).to.eq(1)
         return 'none'
-      })
+      }
+      app.once('mark/user-mark', listener)
+
       await superSes2.shouldReply('mark', 'none')
     })
 
     it('should get continuous data', async () => {
       MockDate.set(new Date('2021-07-23'))
-      app.on('mark/user-mark', async (_, mark, data) => {
+      listener = async (_, mark, data) => {
         return `七天内已连续打卡 ${
           await data.users[mark.uid].week.continuous
         } 天， 共已连续打卡 ${
@@ -133,8 +139,9 @@ describe('Mark Plugin', () => {
         } 天， 共打卡 ${
           await data.users[mark.uid].all.count
         } 次。`
-      })
+      }
 
+      app.once('mark/user-mark', listener)
       app.database.memory.$store['mark'] = [
         '2021-07-15',               '2021-07-17', '2021-07-18',
         '2021-07-19', '2021-07-20', '2021-07-21', '2021-07-22'
@@ -143,6 +150,7 @@ describe('Mark Plugin', () => {
       }) as MarkTable)
       await superSes1.shouldReply('mark', '七天内已连续打卡 7 天， 共已连续打卡 7 天， 共打卡 8 次。')
 
+      app.once('mark/user-mark', listener)
       app.database.memory.$store['mark'] = [
         '2021-07-15',               '2021-07-17', '2021-07-18',
         '2021-07-19', '2021-07-20', '2021-07-21'
@@ -151,6 +159,7 @@ describe('Mark Plugin', () => {
       }) as MarkTable)
       await superSes1.shouldReply('mark', '七天内已连续打卡 1 天， 共已连续打卡 1 天， 共打卡 7 次。')
 
+      app.once('mark/user-mark', listener)
       app.database.memory.$store['mark'] = [
         '2021-07-15', '2021-07-16',               '2021-07-18',
         '2021-07-19', '2021-07-20', '2021-07-21', '2021-07-22'
