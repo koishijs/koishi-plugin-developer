@@ -14,12 +14,14 @@ declare module 'koishi-core' {
   }
 }
 
-Tables.extend('mark')
+export const initTables  = () => {
+  Tables.extend('mark')
 
-Database.extend('koishi-plugin-mysql', ({ tables }) => {
-  tables.mark = {
-    id:    'INT(10) UNSIGNED NOT NULL AUTO_INCREMENT',
-    uid:   'VARCHAR(50) NOT NULL',
-    ctime: 'TIMESTAMP NULL DEFAULT NULL'
-  }
-})
+  Database.extend('koishi-plugin-mysql', ({ tables }) => {
+    tables.mark = {
+      id:    'INT(10) UNSIGNED NOT NULL AUTO_INCREMENT',
+      uid:   'VARCHAR(50) NOT NULL',
+      ctime: 'TIMESTAMP NULL DEFAULT NULL'
+    }
+  })
+}

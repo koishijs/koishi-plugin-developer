@@ -3,9 +3,10 @@ import { merge } from 'koishi-utils'
 
 import dayjs from 'dayjs'
 
-import { MarkTable } from './database'
+import { initTables, MarkTable } from './database'
 import { Config, defaultConfig } from './config'
 
+initTables()
 export { MarkTable } from './database'
 export * from './config'
 
