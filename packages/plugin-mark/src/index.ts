@@ -182,7 +182,7 @@ export const apply = (ctx: Context, config: Config = {}) => {
     })
   } as Mark.StatisticalData
 
-  const mainCmd = ctx.command('mark')
+  const mainCmd = ctx.command('mark', '打卡。')
   mainCmd.alias(
     ...config.markAliases
   ).userFields([
@@ -200,11 +200,9 @@ export const apply = (ctx: Context, config: Config = {}) => {
     )
   })
 
-  mainCmd.subcommand('.list').usage(
-    '以 github contribution 的形式展示你的打卡记录（默认打印七天内）'
-  ).alias(
-    '打卡记录'
-  ).option(
+  mainCmd.subcommand('.list', '获取打卡的 contributor graph。').usage(
+    '以 github contribution graph 的形式展示你的打卡记录（默认打印七天内）。'
+  ).alias('打卡记录').option(
     'month', '-m 30天内', { type: 'boolean' }
   ).option(
     'quarter', '-q 90天内', { type: 'boolean' }
