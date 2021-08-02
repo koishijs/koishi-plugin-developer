@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-mark",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "record user mark data.",
   "author": "yijie",
   "license": "MIT",
@@ -30,8 +30,12 @@
     "koishi-plugin-puppeteer": "^2.1.4"
   },
   "keywords": [
-    "qqbot", "cqhttp", "coolq",
-    "bot", "chatbot",
-    "koishi", "plugin"
+    "qqbot",
+    "cqhttp",
+    "coolq",
+    "bot",
+    "chatbot",
+    "koishi",
+    "plugin"
   ]
 }
