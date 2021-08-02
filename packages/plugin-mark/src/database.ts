@@ -1,6 +1,6 @@
 import { Database, Tables } from 'koishi-core'
-import 'koishi-plugin-mysql'
-import 'koishi-plugin-mongo'
+import type {} from 'koishi-plugin-mysql'
+import type {} from 'koishi-plugin-mongo'
 
 export interface MarkTable {
   id:    number
