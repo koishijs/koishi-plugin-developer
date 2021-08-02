@@ -1,5 +1,6 @@
 import { Context, segment, Query, User } from 'koishi-core'
 import { merge } from 'koishi-utils'
+import type {} from 'koishi-plugin-puppeteer'
 
 import dayjs from 'dayjs'
 
@@ -32,7 +33,7 @@ export namespace Mark {
     [key in StatisticalTimeRangeKeys]: T
   }
   export type BaseStat = {
-    readonly items: Promise<MarkTable>
+    readonly items: Promise<MarkTable[]>
     readonly count: Promise<number>
   }
   export interface StatisticalData {
@@ -111,6 +112,11 @@ export const continuous = (arr: Date[]): {
 }
 
 export const apply = (ctx: Context, config: Config = {}) => {
+  const state: {
+    mode: 'picture' | 'text'
+  } = {
+    mode: 'text'
+  }
   const db = ctx.database
   const _logger = ctx.logger(`koishi-plugin-${name}`)
   config = merge(config, defaultConfig)
@@ -200,6 +206,85 @@ export const apply = (ctx: Context, config: Config = {}) => {
     )
   })
 
+  if (ctx.router) {
+    const Router = require('@koa/router')
+    const pluginRouter = new Router({
+      prefix: `/plugins/${ name }`
+    })
+    pluginRouter.get('/list', async koaCtx => {
+      const { uid = '' } = koaCtx.request.query
+      if (!uid) {
+        koaCtx.status = 404
+        return
+      }
+      const items = await statisticalData.users[uid].year.items
+      let p = 0
+      const style = `
+      <style rel="stylesheet">
+      body, html { margin: 0; padding: 0; }
+      .label {
+        fill: #24292e;
+        font-size: 9px;
+      }
+      .day, .day[data-level="0"] {
+          fill: #ebedf0;
+          shape-rendering: geometricPrecision;
+          outline: 1px solid rgba(27, 31, 35, 0.06);
+          outline-offset: -1px;
+      }
+      .day[data-level="1"] {
+          fill: #40c463;
+          shape-rendering: geometricPrecision;
+          outline: 1px solid rgba(27, 31, 35, 0.06);
+          outline-offset: -1px;
+      }
+      </style>`
+
+      let w = 0
+      let group: string[] = []
+      const groups: string[] = []
+      for (let i = 364; i >= 0; i--) {
+        const d = dayjs().subtract(i, 'd').startOf('d')
+        let level = 0
+        while (p < items.length && dayjs(items[p].ctime).startOf('d').isSame(d)) {
+          level++; p++
+        }
+        let weekDay = d.day()
+        if (weekDay === 0) weekDay = 7
+
+        group.push(`
+        <rect
+          class="day"
+          width="10" height="10"
+          x="14" y="${13*(weekDay - 1)}"
+          rx="2" ry="2"
+          date="${d.toDate().toLocaleString()}"
+          data-level="${level}"></rect>
+        `)
+        if (weekDay === 7 || i === 0) {
+          groups.push(`<g transform="translate(${13*w++}, 0)">${group.join('')}</g>`)
+          group = []
+        }
+      }
+      koaCtx.body = `
+      ${ style }
+      <svg id="graph" width="732" height="112">
+        <g transform="translate(20, 10)">
+          ${ groups.join('') }
+          <text text-anchor="start" class="label" dx="-10" dy="8">Mon</text>
+          <text text-anchor="start" class="label" dx="-10" dy="21">Tue</text>
+          <text text-anchor="start" class="label" dx="-10" dy="34">Wed</text>
+          <text text-anchor="start" class="label" dx="-10" dy="48">Thu</text>
+          <text text-anchor="start" class="label" dx="-10" dy="59">Fri</text>
+          <text text-anchor="start" class="label" dx="-10" dy="74">Sat</text>
+          <text text-anchor="start" class="label" dx="-10" dy="85">Sun</text>
+        </g>
+      </svg>`
+    })
+
+    ctx.router.use(pluginRouter.routes(), pluginRouter.allowedMethods())
+  }
+
   mainCmd.subcommand('.list', '获取打卡的 contributor graph。').usage(
     '以 github contribution graph 的形式展示你的打卡记录（默认打印七天内）。'
   ).alias('打卡记录').option(
@@ -213,17 +298,52 @@ export const apply = (ctx: Context, config: Config = {}) => {
     if (options.month) day = 30
     if (options.quarter) day = 90
     if (options.days) day = +options.days
-    const marks = await db.get('mark', {
-      uid: [ session.user.id ],
-      ctime: { $gt: dayjs().subtract(day, 'd').toDate() }
-    })
 
-    const calendarArr = calendar(marks.map(i => i.ctime), day)
-    // @ts-ignore
-    if (session.platform === 'onebot') {
-      calendarArr[1] = ' '.repeat(calendarArr[1].indexOf('□')/2) + calendarArr[1]
+    if (state.mode === 'text') {
+      const marks = await db.get('mark', {
+        uid: [ session.user.id ],
+        ctime: { $gt: dayjs().subtract(day, 'd').toDate() }
+      })
+
+      const calendarArr = calendar(marks.map(i => i.ctime), day)
+      // @ts-ignore
+      if (session.platform === 'onebot') {
+        calendarArr[1] = ' '.repeat(calendarArr[1].indexOf('□')/2) + calendarArr[1]
+        return calendarArr.join('\n')
+      }
       return calendarArr.join('\n')
+    } else if (state.mode === 'picture') {
+      await ctx.puppeteer.launch()
+      const page = await ctx.puppeteer.browser.newPage()
+      await page.goto(`http://localhost:${ ctx.app.options.port }/plugins/mark/list?uid=${ session.user.id }`)
+      await page.setViewport({ width: 732, height: 112 })
+
+      const curShooter = await page.$('#graph')
+      const buffer = await curShooter.screenshot({ encoding: 'binary' })
+      await ctx.puppeteer.close()
+      return segment.image(buffer)
     }
-    return calendarArr.join('\n')
+  })
+
+  ctx.with(['koishi-plugin-puppeteer'], (pptCtx) => {
+    ctx.app.options.port && (state.mode = 'picture')
+
+    pptCtx.command('mark', { patch: true }).option(
+      'text', '-t 切换为文本模式'
+    ).option(
+      'picture', '-p 切换为图片模式'
+    ).action(({ options }) => {
+      if (options.text) {
+        state.mode = 'text'
+        return '已切换为文本模式'
+      }
+      if (options.picture) {
+        if (ctx.app.options.port === undefined) {
+          throw new Error('端口未打开，请未 koishi 配置 port 参数。')
+        }
+        state.mode = 'picture'
+        return '已切换为图片模式'
+      }
+    })
   })
 }

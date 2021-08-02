@@ -12,6 +12,7 @@
     "README.md"
   ],
   "scripts": {
+    "start:dev": "yarn nodemon test/main.ts"
   },
   "dependencies": {
     "dayjs": "^1.10.6",
@@ -20,7 +21,13 @@
   "devDependencies": {
     "koishi-plugin-mongo": "^2.2.3",
     "koishi-plugin-mysql": "^3.3.2",
+    "koishi-plugin-puppeteer": "^2.1.4",
     "mockdate": "^3.0.5"
+  },
+  "peerDependencies": {
+    "koishi-plugin-mongo": "^2.2.3",
+    "koishi-plugin-mysql": "^3.3.2",
+    "koishi-plugin-puppeteer": "^2.1.4"
   },
   "keywords": [
     "qqbot", "cqhttp", "coolq",
