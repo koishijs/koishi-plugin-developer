@@ -9,6 +9,9 @@
   "typings": "dist/index.d.ts",
   "scripts": {
   },
+  "dependencies": {
+    "chokidar": "^3.5.2"
+  },
   "keywords": [
     "qqbot", "cqhttp", "coolq",
     "bot", "chatbot",
