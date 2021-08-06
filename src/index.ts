@@ -1,7 +1,7 @@
 import path from 'path'
 import { App as KoishiApp } from 'koishi'
 
-import 'koishi-plugin-text-dialogue'
+import * as TextDialogue from 'koishi-plugin-text-dialogue'
 
 const app = new KoishiApp({
   bots: [{
@@ -10,5 +10,7 @@ const app = new KoishiApp({
     watchOptionsMap: [path.resolve(__dirname, '.temp.chat.md')]
   }]
 })
+
+app.plugin(TextDialogue, { isLogMsg: true })
 
 app.start().then()
