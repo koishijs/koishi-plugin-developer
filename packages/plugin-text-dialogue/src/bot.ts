@@ -87,7 +87,8 @@ export class TextDialogueAdapter extends Adapter<'text-dialogue'> {
     const { content, username } = result
     if (username === bot.selfId) return
 
-    this.app.logger('text-dialogue').info(`接收到 ${username} 的消息:\n${content}`)
+    if (TextDialogueAdapter.config.isLogMsg)
+      this.app.logger('text-dialogue').info(`接收到 ${username} 的消息:\n${content}`)
     this.dispatch(new Session(this.app, {
       platform: 'text-dialogue',
       type: 'message',

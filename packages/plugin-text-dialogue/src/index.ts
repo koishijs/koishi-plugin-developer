@@ -30,8 +30,7 @@ export const name = 'text-dialogue'
 Adapter.types['text-dialogue'] = TextDialogueAdapter
 
 export const apply = (ctx: Context, config: Config = {}) =>  {
-  TextDialogueAdapter.config.watchOptionsMap = merge(
-    resolveWatchOptionsMap(config.watchOptionsMap),
-    TextDialogueAdapter.config.watchOptionsMap
-  )
+  if (config.watchOptionsMap)
+    config.watchOptionsMap = resolveWatchOptionsMap(config.watchOptionsMap)
+  TextDialogueAdapter.config = merge(config, TextDialogueAdapter.config)
 }

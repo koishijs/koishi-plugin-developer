@@ -3,6 +3,7 @@ import { WatchOptions } from 'chokidar'
 export type WatchOptionsMap = Record<string, WatchOptions> | string[]
 
 export interface Config {
+  isLogMsg?: boolean
   watchOptionsMap?: WatchOptionsMap
 }
 
