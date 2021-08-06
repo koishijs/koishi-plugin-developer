@@ -9,7 +9,8 @@
   "typings": "dist/index.d.ts",
   "scripts": {},
   "dependencies": {
-    "chokidar": "^3.5.2"
+    "chokidar": "^3.5.2",
+    "qface": "^1.2.0"
   },
   "keywords": [
     "qqbot",

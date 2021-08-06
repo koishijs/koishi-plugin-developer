@@ -1,4 +1,5 @@
-import { App, Session } from 'koishi'
+import qface from 'qface'
+import { App, segment, Session } from 'koishi'
 import chokidar from 'chokidar'
 import { Adapter, Bot, BotOptions } from 'koishi-core'
 import { Config, resolveWatchOptionsMap } from './config'
@@ -19,9 +20,22 @@ export class TextDialogueBot extends Bot<'text-dialogue'> {
   }
 
   async sendMessage(session, message) {
+    message = segment.transform(message, {
+      image(data) {
+        if (data.file) {
+          return `![image](${data.file})`
+        }
+        if (!data.url.startsWith('base64://'))
+          return `![image](${data.url})`
+        return `![image](data:image/png;base64,${data.url.slice(9)})`
+      },
+      face(data) {
+        return `![QQFace ${data.id}](${qface.getUrl(data.id)})`
+      }
+    })
+    message = `${this.selfId}@${message}`
     const [_, filePath, ...args] = session.split(':')
     const realPath = [filePath, ...args].join(':')
-    message = `${this.selfId}@${message}`
 
     const lines = [...message.split('\n'), '']
     fs.appendFileSync(realPath, '\n' + lines.map(line => `> ${line}`).join('\n'))
