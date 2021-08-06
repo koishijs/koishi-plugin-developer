@@ -10,9 +10,11 @@
   "scripts": {},
   "dependencies": {
     "chokidar": "^3.5.2",
-    "identicon.js": "^2.3.3",
-    "js-md5": "^0.7.3",
     "qface": "^1.2.0"
+  },
+  "devDependencies": {
+    "identicon.js": "^2.3.3",
+    "js-md5": "^0.7.3"
   },
   "keywords": [
     "qqbot",
