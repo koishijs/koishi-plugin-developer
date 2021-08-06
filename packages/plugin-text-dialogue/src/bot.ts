@@ -53,7 +53,7 @@ export function analyzeMessage(str: string): {
 
   return {
     username: msg.slice(null, splitIndex),
-    content: msg.slice(splitIndex + 1)
+    content: msg.slice(splitIndex + 1).trim()
   }
 }
 
