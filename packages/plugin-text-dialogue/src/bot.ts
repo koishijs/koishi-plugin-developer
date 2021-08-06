@@ -22,10 +22,11 @@ export class TextDialogueBot extends Bot<'text-dialogue'> {
     const [_, filePath, ...args] = session.split(':')
     const realPath = [filePath, ...args].join(':')
 
-    const lines = `${this.selfId}@${message}`.split('\n')
-    let content = lines.map(line => `> ${line}`).join('\n')
-    content += '<'.repeat(lines.length)
-    fs.appendFileSync(realPath, '\n\n' + content + '\n')
+    message = `${this.selfId}@${message}`
+    const lines = message.split('\n')
+    if (lines[lines.length - 1].trim() !== '')
+      lines.push('<'.repeat(lines.length))
+    fs.appendFileSync(realPath, '\n' + lines.map(line => `> ${line}`).join('\n') + '\n')
     return undefined
   }
 }
@@ -82,12 +83,13 @@ export class TextDialogueAdapter extends Adapter<'text-dialogue'> {
   dispatchNewMessage(path: string, filePath: string, stats: fs.Stats) {
     const bot = TextDialogueAdapter.pathBotMap[path]
 
-    const {
-      content, username
-    } = analyzeMessage(fs.readFileSync(filePath).toString())
+    const result = analyzeMessage(fs.readFileSync(filePath).toString())
+    if (!result) return
 
+    const { content, username } = result
     if (username === bot.selfId) return
 
+    this.app.logger('text-dialogue').info(`接收到 ${username} 的消息:\n${content}`)
     this.dispatch(new Session(this.app, {
       platform: 'text-dialogue',
       type: 'message',
