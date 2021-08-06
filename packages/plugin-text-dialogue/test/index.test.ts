@@ -11,12 +11,12 @@ after(() => {
 })
 
 describe('Text Dialogue Plugin', () => {
-  describe('', function () {
+  describe('Analyze message', function () {
     it('should analyze simple message.', () => {
       expect(analyzeMessage('' +
         '> yijie@hello world<'
       )).to.be.deep.eq({
-        content: 'hello world\n',
+        content: 'hello world',
         username: 'yijie'
       })
 
@@ -29,7 +29,7 @@ describe('Text Dialogue Plugin', () => {
         '> yijie@hello world\n' +
         '> <<'
       )).to.be.deep.eq({
-        content: 'hello world\n',
+        content: 'hello world',
         username: 'yijie'
       })
     })
@@ -46,6 +46,8 @@ describe('Text Dialogue Plugin', () => {
   })
 
   describe('Basic', function () {
+    this.timeout(5000)
+
     const watchFile = path.resolve(__dirname, '.demo.temp.md')
     fs.writeFileSync(watchFile, '')
 
@@ -67,8 +69,8 @@ describe('Text Dialogue Plugin', () => {
           expect(fs.readFileSync(watchFile).toString())
             .to.be.eq('' +
               '> yijie@hello world<\n' +
-              '\n' +
-              '> test@hello master<\n'
+              '> test@hello master\n' +
+              '> '
             )
           done()
         }
