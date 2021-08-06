@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-text-dialogue",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "和你的 bot 在文本中对话",
   "author": "yijie",
   "license": "MIT",
@@ -10,9 +10,9 @@
   "scripts": {},
   "dependencies": {
     "chokidar": "^3.5.2",
-    "qface": "^1.2.0",
     "identicon.js": "^2.3.3",
-    "js-md5": "^0.7.3"
+    "js-md5": "^0.7.3",
+    "qface": "^1.2.0"
   },
   "keywords": [
     "qqbot",
