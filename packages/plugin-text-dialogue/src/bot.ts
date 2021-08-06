@@ -21,12 +21,10 @@ export class TextDialogueBot extends Bot<'text-dialogue'> {
   async sendMessage(session, message) {
     const [_, filePath, ...args] = session.split(':')
     const realPath = [filePath, ...args].join(':')
-
     message = `${this.selfId}@${message}`
-    const lines = message.split('\n')
-    if (lines[lines.length - 1].trim() !== '')
-      lines.push('<'.repeat(lines.length))
-    fs.appendFileSync(realPath, '\n' + lines.map(line => `> ${line}`).join('\n') + '\n')
+
+    const lines = [...message.split('\n'), '']
+    fs.appendFileSync(realPath, '\n' + lines.map(line => `> ${line}`).join('\n'))
     return undefined
   }
 }
