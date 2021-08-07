@@ -80,7 +80,7 @@ export class TextDialogueAdapter extends Adapter<'text-dialogue'> {
 
   constructor(app: App) {
     super(app, TextDialogueBot)
-    app.once('connect', () => {
+    app.on('connect', async () => {
       for (const path in TextDialogueAdapter.config.watchOptionsMap) {
         chokidar.watch(path, TextDialogueAdapter.config.watchOptionsMap[path])
           .on('change', (filePath, stats) => {
