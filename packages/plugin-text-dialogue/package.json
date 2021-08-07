@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-text-dialogue",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "和你的 bot 在文本中对话",
   "author": "yijie",
   "license": "MIT",
