@@ -178,7 +178,9 @@ describe('Mark Plugin', () => {
       await superSes1.shouldReply('mark', '七天内已连续打卡 6 天， 共已连续打卡 6 天， 共打卡 8 次。')
     })
   })
+})
 
+describe('Tools', function () {
   it('should return right calendar.', () => {
     MockDate.set(new Date('2021-07-23'))
     expect(
