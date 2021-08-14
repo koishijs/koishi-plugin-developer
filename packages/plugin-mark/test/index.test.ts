@@ -195,14 +195,46 @@ describe('Mark Plugin', () => {
     })
 
     it('should repair the last week once.', async () => {
-      MockDate.set(new Date('2021-08-12'))
-      // app.database.memory.$store['mark'] = [
-      //   '2021-07-20',
-      //   '2021-07-21'
-      // ].map((ctime, index) => new Object({
-      //   id: index + 1, uid: '1', ctime: new Date(ctime)
-      // }) as MarkTable)
-      await superSes1.shouldReply('mark.repair', '1')
+      MockDate.set(new Date('2021-08-14'))
+      await superSes1.shouldReply('mark.repair', '补签成功')
+      expect(
+        (await app.database.get('mark', {
+          uid: '1', ctime: {
+            $gte: new Date('2021-08-13T16:00:00.000Z'),
+            $lte: new Date('2021-08-13T16:00:00.000Z')
+          }
+        }))[0]
+      ).to.be.exist
+
+      app.database.memory.$store['mark'] = [
+        '2021-08-14', '2021-08-13', '2021-08-12', '2021-08-11', '2021-08-10', '2021-08-08'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(`${ctime}T16:00:00.000Z`)
+      }) as MarkTable)
+      await superSes1.shouldReply('mark.repair', '补签成功')
+      expect(
+        (await app.database.get('mark', {
+          uid: '1', ctime: {
+            $gte: new Date('2021-08-09T16:00:00.000Z'),
+            $lte: new Date('2021-08-09T16:00:00.000Z')
+          }
+        }))[0]
+      ).to.be.exist
+
+      app.database.memory.$store['mark'] = [
+        '2021-08-14', '2021-08-13', '2021-08-12', '2021-08-11', '2021-08-10', '2021-08-09', '2021-08-08', '2021-08-07'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(`${ctime}T16:00:00.000Z`)
+      }) as MarkTable)
+      await superSes1.shouldReply('mark.repair', '补签成功')
+      expect(
+        (await app.database.get('mark', {
+          uid: '1', ctime: {
+            $gte: new Date('2021-08-06T16:00:00.000Z'),
+            $lte: new Date('2021-08-06T16:00:00.000Z')
+          }
+        }))[0]
+      ).to.be.not.exist
     })
   })
 })

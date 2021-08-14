@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 
-import { Context, segment, Query, User } from 'koishi-core'
+import { Context, segment, Query, User, Extend } from 'koishi-core'
 import { merge } from 'koishi-utils'
 import type {} from 'koishi-plugin-puppeteer'
 
@@ -18,6 +18,9 @@ declare module 'koishi-core' {
     'mark/user-mark'(
       msg: string, mark: MarkTable, data: Mark.StatisticalData
     ): Promise<string>
+    'mark/user-repair'(
+      msg: string, uid: string, repairOptions: RepairOptions
+    ): Promise<string>
   }
 
   namespace Plugin {
@@ -26,6 +29,10 @@ declare module 'koishi-core' {
     }
   }
 }
+
+export type RepairOptions = Extend<Extend<{},
+  "count", number>,
+  "range", number>
 
 export namespace Mark {
   export type StatisticalTimeRangeKeys = 'all' | 'year' | 'month' | 'week' | 'day'
@@ -107,18 +114,16 @@ export const continuous = (arr: Date[]) => {
 
 export const excludeDate = (arr: Date[], offset: number, end = 0) => {
   const result: Date[] = []
-  if (arr.length > 0) {
-    arr = arr.sort((a, b) => a > b ? 1 : -1)
+  arr = arr.sort((a, b) => a > b ? 1 : -1)
 
-    let p = 0
-    const endDay = dayjs().startOf('d').subtract(end, 'd')
+  let p = 0
+  const endDay = dayjs().startOf('d').subtract(end, 'd')
 
-    for (let i = 2; i < offset + 2; i++) {
-      const day = endDay.subtract(offset - i, 'd').startOf('d')
-      if (p >= arr.length || !day.isSame(arr[p], 'd')) {
-        result.push(day.toDate())
-      } else { p++ }
-    }
+  for (let i = 2; i < offset + 2; i++) {
+    const day = endDay.subtract(offset - i, 'd').startOf('d')
+    if (p >= arr.length || !day.isSame(arr[p], 'd')) {
+      result.push(day.toDate())
+    } else { p++ }
   }
   return result
 }
@@ -336,6 +341,42 @@ export const apply = (ctx: Context, config: Config = {}) => {
       return segment.image(buffer)
     }
   })
+
+  if (config.switch.repair) {
+    mainCmd.subcommand('.repair', '补签打卡记录').usage(
+      '补签距离今天最近的打卡，不包括今天。'
+    ).alias('补签').option(
+      'count', '-c <count:posint> 补签次数', { fallback: 1 }
+    ).option(
+      'range', '-r <range:posint> 补签时间范围', { fallback: 7 }
+    ).shortcut(
+      /^补签(\d+)次$/, { options: { count: '$1' } }
+    ).shortcut(
+      /^补签最近(\d+)天(记录)?$/, { options: { range: '$1' } }
+    ).shortcut(
+      /^补签最近(\d+)天(记录)?(\d+)次$/, { options: { range: '$1', count: '$3' } }
+    ).check(({ options }) => {
+      if (
+        options.range > config.limit.repairTimeInterval
+      ) return config.msgs.overflowRepairTimeInterval
+    }).userFields([ 'id' ]).action(async ({ session, options }) => {
+      try {
+        const msg = await ctx.waterfall(session, 'mark/user-repair', '补签成功', session.user.id, options)
+        const excludeMarkDateArr = excludeDate((await db.get('mark', {
+          uid: [ session.user.id ],
+          ctime: { $gt: dayjs().subtract(options.range, 'd').toDate() }
+        })).map(m => m.ctime), options.range, 1)
+        const successItems = []
+        for (let i = excludeMarkDateArr.length - 1; i >= 0 && i >= excludeMarkDateArr.length - options.count; i--) {
+          successItems.push(excludeMarkDateArr[i])
+          await db.create('mark', { uid: session.user.id, ctime: excludeMarkDateArr[i] })
+        }
+        return msg
+      } catch (e) {
+        return e.message || '补签失败'
+      }
+    })
+  }
 
   ctx.with(['koishi-plugin-puppeteer'], (pptCtx) => {
     ctx.app.options.port && (state.mode = 'picture')
