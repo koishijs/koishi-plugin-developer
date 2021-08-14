@@ -187,7 +187,12 @@ describe('Mark Plugin', () => {
   describe('Repair', () => {
     before(async () => {
       await app.dispose(mark)
-      app.plugin(mark, { switch: { repair: true } })
+      app.plugin(mark, {
+        limit: {
+          repairTimeInterval: 10
+        },
+        switch: { repair: true }
+      })
     })
     after(async () => {
       await app.dispose(mark)
@@ -222,7 +227,7 @@ describe('Mark Plugin', () => {
       ).to.be.exist
 
       app.database.memory.$store['mark'] = [
-        '2021-08-14', '2021-08-13', '2021-08-12', '2021-08-11', '2021-08-10', '2021-08-09', '2021-08-08', '2021-08-07'
+        '2021-08-13', '2021-08-12', '2021-08-11', '2021-08-10', '2021-08-09', '2021-08-08', '2021-08-07'
       ].map((ctime, index) => new Object({
         id: index + 1, uid: '1', ctime: new Date(`${ctime}T16:00:00.000Z`)
       }) as MarkTable)
@@ -235,6 +240,42 @@ describe('Mark Plugin', () => {
           }
         }))[0]
       ).to.be.not.exist
+      expect(
+        (await app.database.get('mark', {
+          uid: '1', ctime: {
+            $gte: new Date('2021-08-14T16:00:00.000Z'),
+            $lte: new Date('2021-08-14T16:00:00.000Z')
+          }
+        }))[0]
+      ).to.be.not.exist
+    })
+
+    it('should test command arguments', async () => {
+      MockDate.set(new Date('2021-08-14'))
+
+      app.database.memory.$store['mark'] = [
+        '2021-08-13', '2021-08-12', '2021-08-11', '2021-08-10', '2021-08-08'
+      ].map((ctime, index) => new Object({
+        id: index + 1, uid: '1', ctime: new Date(`${ctime}T16:00:00.000Z`)
+      }) as MarkTable)
+      await superSes1.shouldReply('mark.repair -c 2', '补签成功')
+      expect(
+        await app.database.get('mark', {
+          uid: '1', $or: [
+            { ctime: { $gte: new Date('2021-08-09T16:00:00.000Z'), $lte: new Date('2021-08-09T16:00:00.000Z') } },
+            { ctime: { $gte: new Date('2021-08-07T16:00:00.000Z'), $lte: new Date('2021-08-07T16:00:00.000Z') } },
+          ]
+        })
+      ).to.be.have.length(2)
+      await superSes1.shouldReply('mark.repair -c 2 -r 8', '补签成功')
+      expect(
+        (await app.database.get('mark', {
+          uid: '1', ctime: {
+            $gte: new Date('2021-08-06T16:00:00.000Z'), $lte: new Date('2021-08-09T16:00:00.000Z')
+          }
+        }))[0]
+      ).to.be.exist
+      await superSes1.shouldReply('mark.repair -c 2 -r 11', '已超过能够补签的时间范围')
     })
   })
 })
