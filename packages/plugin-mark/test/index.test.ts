@@ -5,7 +5,7 @@ import { expect } from 'chai'
 import * as MockDate from 'mockdate'
 
 import * as mark from 'koishi-plugin-mark'
-import { calendar, continuous, MarkTable } from 'koishi-plugin-mark'
+import { calendar, continuous, excludeDate, MarkTable } from 'koishi-plugin-mark'
 
 describe('Mark Plugin', () => {
   const app = new App({
@@ -71,6 +71,11 @@ describe('Mark Plugin', () => {
         '□ ■ ■ □ □     '
       )
       await superSes1.shouldReply('mark.list -d asdas', '选项 days 输入无效，请提供一个数字。')
+    })
+
+    it('should not repair mark.', async () => {
+      MockDate.set(new Date('2021-08-12'))
+      await superSes1.shouldNotReply('mark.repair')
     })
   })
 
@@ -178,6 +183,28 @@ describe('Mark Plugin', () => {
       await superSes1.shouldReply('mark', '七天内已连续打卡 6 天， 共已连续打卡 6 天， 共打卡 8 次。')
     })
   })
+
+  describe('Repair', () => {
+    before(async () => {
+      await app.dispose(mark)
+      app.plugin(mark, { switch: { repair: true } })
+    })
+    after(async () => {
+      await app.dispose(mark)
+      app.plugin(mark)
+    })
+
+    it('should repair the last week once.', async () => {
+      MockDate.set(new Date('2021-08-12'))
+      // app.database.memory.$store['mark'] = [
+      //   '2021-07-20',
+      //   '2021-07-21'
+      // ].map((ctime, index) => new Object({
+      //   id: index + 1, uid: '1', ctime: new Date(ctime)
+      // }) as MarkTable)
+      await superSes1.shouldReply('mark.repair', '1')
+    })
+  })
 })
 
 describe('Tools', function () {
@@ -228,5 +255,25 @@ describe('Tools', function () {
     ].map(ctime => new Date(ctime)))
     expect(result).to.have.property('count', 2)
     expect(result).to.have.property('offset', 370)
+  })
+
+  it('should exclude target date array from date range.', () => {
+    MockDate.set(new Date('2021-08-14'))
+    let result: ReturnType<typeof excludeDate>
+    result = excludeDate([
+      '2021-08-10', '2021-08-12', '2021-08-11', '2021-08-13'
+    ].map(ctime => new Date(`${ctime}T16:00:00.000Z`)), 7)
+    expect(result).to.have.length(3)
+    expect(result).to.be.deep.eq([
+      '2021-08-08', '2021-08-09', '2021-08-14'
+    ].map(ctime => new Date(`${ctime}T16:00:00.000Z`)))
+
+    result = excludeDate([
+      '2021-08-10', '2021-08-12', '2021-08-11', '2021-08-13'
+    ].map(ctime => new Date(`${ctime}T16:00:00.000Z`)), 7, 1)
+    expect(result).to.have.length(3)
+    expect(result).to.be.deep.eq([
+      '2021-08-07', '2021-08-08', '2021-08-09'
+    ].map(ctime => new Date(`${ctime}T16:00:00.000Z`)))
   })
 })

@@ -1,8 +1,8 @@
+import dayjs from 'dayjs'
+
 import { Context, segment, Query, User } from 'koishi-core'
 import { merge } from 'koishi-utils'
 import type {} from 'koishi-plugin-puppeteer'
-
-import dayjs from 'dayjs'
 
 import { initTables, MarkTable } from './database'
 import { Config, defaultConfig } from './config'
@@ -83,17 +83,11 @@ export const calendar = (
   return output
 }
 
-export const continuous = (arr: Date[]): {
-  offset: number; count: number
-} => {
-  const result = {
-    offset: 0, count: 0
-  }
+export const continuous = (arr: Date[]) => {
+  const result = { offset: 0, count: 0 }
   if (arr.length === 0) return result
 
-  arr.sort(
-    (a, b) => a > b ? 1 : -1
-  )
+  arr.sort((a, b) => a > b ? 1 : -1)
   const lastDay = dayjs(arr[arr.length - 1]).startOf('d')
   result.offset = dayjs().diff(lastDay, 'd')
   result.count++
@@ -107,6 +101,24 @@ export const continuous = (arr: Date[]): {
       break
     }
     prevDay = cur
+  }
+  return result
+}
+
+export const excludeDate = (arr: Date[], offset: number, end = 0) => {
+  const result: Date[] = []
+  if (arr.length > 0) {
+    arr = arr.sort((a, b) => a > b ? 1 : -1)
+
+    let p = 0
+    const endDay = dayjs().startOf('d').subtract(end, 'd')
+
+    for (let i = 2; i < offset + 2; i++) {
+      const day = endDay.subtract(offset - i, 'd').startOf('d')
+      if (p >= arr.length || !day.isSame(arr[p], 'd')) {
+        result.push(day.toDate())
+      } else { p++ }
+    }
   }
   return result
 }
