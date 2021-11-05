@@ -250,7 +250,7 @@ describe('Mark Plugin', () => {
       ).to.be.not.exist
     })
 
-    it('should test command arguments', async () => {
+    it('should test command arguments.', async () => {
       MockDate.set(new Date('2021-08-14'))
 
       app.database.memory.$store['mark'] = [
@@ -276,6 +276,35 @@ describe('Mark Plugin', () => {
         }))[0]
       ).to.be.exist
       await superSes1.shouldReply('mark.repair -c 2 -r 11', '已超过能够补签的时间范围')
+    })
+
+    it('should get repair options when trigger repair event.', (done) => {
+      MockDate.set(new Date('2021-08-14'))
+      app.once('mark/user-repair', async (msg, uid, repairOptions) => {
+        try {
+          expect(uid).to.be.eq('1')
+          expect(repairOptions).to.be.deep.eq({ count: 2, range: 7 })
+          done()
+          return msg
+        } catch (e) { done(e) }
+      })
+      superSes1.shouldReply('mark.repair -c 2 -r 7', '补签成功')
+    })
+
+    it('should not repair when event throw error.', async () => {
+      MockDate.set(new Date('2021-08-14'))
+      app.once('mark/user-repair', async () => {
+        throw new Error('test')
+      })
+      await superSes1.shouldReply('mark.repair', 'test')
+      expect(
+        (await app.database.get('mark', {
+          uid: '1', ctime: {
+            $gte: new Date('2021-08-06T16:00:00.000Z'),
+            $lte: new Date('2021-08-06T16:00:00.000Z')
+          }
+        }))[0]
+      ).to.be.not.exist
     })
   })
 })
