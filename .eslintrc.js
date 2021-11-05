@@ -33,8 +33,7 @@ module.exports = {
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-var-requires': 'off',
-    'no-unused-vars': [
+    '@typescript-eslint/no-var-requires': [
       'error', {
         argsIgnorePattern: '^_.*$',
         varsIgnorePattern: '^_.*$'
