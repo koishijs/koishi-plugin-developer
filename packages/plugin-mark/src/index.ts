@@ -219,7 +219,7 @@ export const apply = (ctx: Context, config: Config = {}) => {
   }).action(async ({ session }) => {
     const mark = await db.create('mark', { uid: session.user.id, ctime: new Date() })
     return ctx.waterfall(
-      'mark/user-mark', `${segment.at(session.uid)}，打卡成功`, mark, statisticalData
+      session, 'mark/user-mark', `${segment.at(session.uid)}，打卡成功`, mark, statisticalData
     )
   })
 
@@ -392,7 +392,7 @@ export const apply = (ctx: Context, config: Config = {}) => {
       }
       if (options.picture) {
         if (ctx.app.options.port === undefined) {
-          throw new Error('端口未打开，请未 koishi 配置 port 参数。')
+          throw new Error('端口未打开，请配置 port 参数。')
         }
         state.mode = 'picture'
         return '已切换为图片模式'
