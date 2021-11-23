@@ -7,7 +7,7 @@
 ### 安装插件
 
 ```shell
-yarn install koishi-plugin-text-dialogue
+yarn add koishi-plugin-text-dialogue
 # or
 npm i --save koishi-plugin-text-dialogue
 ```
