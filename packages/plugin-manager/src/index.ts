@@ -86,7 +86,11 @@ export const apply = (ctx: Context, config: Config = {}) => {
         try {
           return await callback.call(this, ...args)
         } catch (e) {
-          return e.message
+          if (e instanceof Error) {
+            return e.message
+          } else {
+            return '未知错误'
+          }
         }
       }, append)
     }
