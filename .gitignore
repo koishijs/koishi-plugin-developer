@@ -4,6 +4,7 @@
 
 # build data
 **/dist
+**/bin
 
 # run data
 .koishi

@@ -2,18 +2,12 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [ "src/*" ],
-      "koishi-plugin-*": [ "packages/plugin-*/dist" ]
-    }
+    "baseUrl": "."
   },
   "include": [
-    "cli/**/*.ts",
-    "src/**/*.ts",
     "test/**/*.ts",
-    "src/**/*.tsx",
-    "test/**/*.tsx"
+    "plugins/*/rollup.config.ts",
+    "packages/*/rollup.config.ts"
   ],
   "exclude": [
     "node_modules"

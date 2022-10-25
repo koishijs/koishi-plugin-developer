@@ -1,0 +1,18 @@
+{
+  "name": "@koishi-kits/builder",
+  "version": "0.0.0",
+  "description": "A builder for build Koishi.js plugins.",
+  "main": "src/index.ts",
+  "dependencies": {
+    "rollup": "^3.2.3",
+    "@rollup/plugin-commonjs": "^19.0.2",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "rollup-plugin-esbuild": "^4.10.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-eslint": "^9.0.0"
+  },
+  "peerDependencies": {
+    "@rollup/plugin-eslint": "^9.0.0"
+  }
+}

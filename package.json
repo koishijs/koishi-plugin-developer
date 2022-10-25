@@ -11,62 +11,26 @@
   },
   "homepage": "https://github.com/NWYLZW/koishi-plugin-developer#readme",
   "scripts": {
-    "start:dev": "nodemon ./src/index.ts",
-    "start:pro": "ts-node ./src/index.ts",
-    "clear": "rimraf ./packages/plugin-*/dist",
-    "helper:plugin": "ts-node ./cli/plugin-helper.ts",
-    "build": "ts-node ./cli/builder.ts",
-    "build:plugins": "yarn build --clear --all",
-    "build:plugin": "yarn build --clear --all-format",
-    "build:plugin:esm": "yarn build --format esm",
-    "build:plugin:umd": "yarn build --format umd",
-    "build:plugin:min": "yarn build --format min"
+    "cli": "node ./packages/cli/bin/index.js"
   },
   "workspaces": [
+    "bots/*",
+    "plugins/*",
     "packages/*"
   ],
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
-    "koishi": "^3.13.0",
-    "koishi-core": "^3.13.0",
-    "koishi-utils": "^4.2.3",
     "regenerator-runtime": "^0.13.7",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.0",
-    "@babel/plugin-transform-regenerator": "^7.13.15",
-    "@babel/plugin-transform-runtime": "^7.13.15",
-    "@babel/preset-env": "^7.14.1",
-    "@babel/preset-typescript": "^7.13.0",
-    "@types/chai": "^4.2.17",
-    "@types/chai-as-promised": "^7.1.3",
-    "@types/inquirer": "^7.3.1",
-    "@types/js-yaml": "^4.0.1",
-    "@types/mocha": "^8.2.2",
     "@types/node": "^15.0.1",
     "@typescript-eslint/eslint-plugin": "^4.22.1",
     "@typescript-eslint/parser": "^4.22.1",
-    "chai": "^4.3.4",
-    "chai-as-promised": "^7.1.1",
-    "commander": "^7.2.0",
     "eslint": "^7.25.0",
-    "eslint-plugin-mocha": "^8.1.0",
-    "inquirer": "^8.0.0",
-    "koishi-test-utils": "^6.1.0",
-    "mocha": "^8.3.2",
     "nodemon": "^2.0.7",
-    "rollup": "^2.47.0",
-    "rollup-plugin-babel": "^4.4.0",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-eslint": "^7.0.0",
-    "rollup-plugin-json": "^4.0.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.30.0",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.2.4"

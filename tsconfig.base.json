@@ -15,7 +15,9 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "koishi-plugin-*": [ "packages/plugin-*/src" ]
+      "@koishi-bots/*": [ "bots/*/src" ],
+      "@koishi-kits/*": [ "packages/*/src" ],
+      "koishi-plugin-*": [ "plugins/plugin-*/src" ]
     },
     "types": [ "node", "mocha" ],
     "lib": [

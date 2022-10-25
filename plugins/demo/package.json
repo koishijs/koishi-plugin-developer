@@ -1,0 +1,12 @@
+{
+  "name": "koishi-plugin-demo",
+  "version": "1.0.0",
+  "description": "A demo plugin for Koishi.js.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "scripts": {
+  },
+  "dependencies": {
+    "koishi": "^4.9.6"
+  }
+}
