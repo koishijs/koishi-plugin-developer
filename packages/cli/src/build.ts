@@ -27,18 +27,16 @@ export function apply(program: Command) {
       const opts = {
         cwd: `./${ type }s/${ name }`
       }
-      await Promise.all(
-        platforms.reduce((acc, platform) => acc.concat([
-          doCommand('rollup', [
-            '-c',
-            '--environment', `FORMAT:${ platform }`,
-            '--bundleConfigAsCjs',
-            '--configPlugin', path.resolve('./rollup-tsnode-plugin.js'),
-          ], opts),
-          doCommand('tsc', [
-            '--project', 'tsconfig.build.json',
-          ], opts)
-        ]), [] as Promise<number>[])
-      )
+      await Promise.all([
+        ...platforms.map(platform => doCommand('rollup', [
+          '-c',
+          '--environment', `FORMAT:${ platform }`,
+          '--bundleConfigAsCjs',
+          '--configPlugin', path.resolve('./rollup-tsnode-plugin.js'),
+        ], opts)),
+        doCommand('tsc', [
+          '--project', 'tsconfig.build.json',
+        ], opts)
+      ])
     })
 }
