@@ -1,7 +1,7 @@
-const Koishi = require('koishi')
+const Cordis = require('cordis')
 
-const originalPlugin = Koishi.App.prototype.plugin
-Koishi.App.prototype.plugin = (...args) => {
+const originalPlugin = Cordis.Context.prototype.plugin
+Cordis.Context.prototype.plugin = function (...args) {
   const { name } = args[0]
   if (name) {
     process.send?.(`installed ${name}`)
