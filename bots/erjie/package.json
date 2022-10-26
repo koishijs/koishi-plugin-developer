@@ -1,0 +1,9 @@
+{
+  "name": "erjie",
+  "main": "index.ts",
+  "version": "0.1.0",
+  "dependencies": {
+    "koishi": "^4.9.6",
+    "koishi-plugin-demo": "file:../../plugins/demo"
+  }
+}
