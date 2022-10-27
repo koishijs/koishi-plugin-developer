@@ -1,5 +1,7 @@
 const Koishi = require('koishi')
 
+const logger = console.log.bind(console, '[koishi-hot-reload]')
+
 /** @typedef {import('./protocol').Protocol} Protocol */
 
 /**
@@ -56,11 +58,21 @@ process.on(
     if (msg.type === 'plugin:reload') {
       const resolver = msg.data
       const relatives = ctxMap.get(resolver)
-      relatives.forEach(({ ctx, name, fork, config }) => {
-        console.log(`[koishi] disposing plugin ${name}`)
-        fork.dispose()
-        delete require.cache[resolver]
-        console.log(`[koishi] disposed plugin ${name}`)
+      relatives.forEach((relative) => {
+        const { ctx, name, fork, config } = relative
+        logger(`disposing plugin ${name}`)
+        try {
+          fork.dispose()
+          delete require.cache[resolver]
+        } catch (e) {
+          console.error(e)
+          logger(`failed to dispose plugin ${name}`)
+          return
+        }
+        logger(`disposed plugin ${name}`)
+        // remove relative from ctxMap
+        const index = ctxMap.get(resolver).indexOf(relative)
+        ctxMap.get(resolver).splice(index, 1)
         ctx.plugin(require(resolver), config)
       })
     }
