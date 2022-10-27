@@ -11,7 +11,8 @@
   },
   "homepage": "https://github.com/NWYLZW/koishi-plugin-developer#readme",
   "scripts": {
-    "cli": "node ./packages/cli/bin/index.js"
+    "cli": "node ./packages/cli/bin/index.js",
+    "run": "yarn cli start"
   },
   "workspaces": [
     "bots/*",
