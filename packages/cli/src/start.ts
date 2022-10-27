@@ -59,8 +59,8 @@ export function apply(program: Command) {
       const opts = {
         cwd: `./bots/${ botName }`
       }
-      // * [ ] hack plugin method
-      // * [ ] watch plugins directories change, reload target plugin
+      // * [x] hack plugin method
+      // * [x] watch plugins directories change, reload target plugin
       // * [ ] watch bot directory change, reload bot
       await doCommand('ts-node', [
         '-r', 'dotenv/config',
