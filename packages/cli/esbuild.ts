@@ -20,7 +20,8 @@ async function main() {
     external: [
       'dotenv',
       'commander',
-      'inquirer'
+      'inquirer',
+      'chokidar'
     ],
     format: 'cjs',
     outfile: './bin/index.js'

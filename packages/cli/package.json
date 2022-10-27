@@ -16,7 +16,8 @@
   "dependencies": {
     "commander": "^9.4.1",
     "dotenv": "^16.0.3",
-    "inquirer": "^8.2.4"
+    "inquirer": "^8.2.4",
+    "chokidar": "^3.5.3"
   },
   "devDependencies": {
     "@types/commander": "^2.12.2",
