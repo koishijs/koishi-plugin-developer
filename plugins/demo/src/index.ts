@@ -9,7 +9,8 @@ export const Config = Schema.object({
   repeatCount: Number
 })
 
-const name = 'demo'
+export const name = 'demo'
+
 const logger = new Logger(name)
 
 export const apply = (ctx: Context, config: Config) => {
