@@ -11,12 +11,12 @@ export namespace Protocol {
     type: T
     data: UpDispatcherMap[T][0]
   }, UpDispatcherMap[T][1]]
-  export interface DownDispatcher {
+  export interface DownDispatcherMap {
     'plugin:reload': [resolver: string, null]
   }
-  export type DownTypes = keyof DownDispatcher
+  export type DownTypes = keyof DownDispatcherMap
   export type DownDispatcher<T extends DownTypes = DownTypes> = [{
     type: T
-    data: DownDispatcher[T][0]
-  }, DownDispatcher[T][1]]
+    data: DownDispatcherMap[T][0]
+  }, DownDispatcherMap[T][1]]
 }
