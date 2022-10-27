@@ -1,7 +1,8 @@
-import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
+import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from 'child_process'
 
 export const doCommand = (
-  cmd: string, args?: ReadonlyArray<string>, options?: SpawnOptionsWithoutStdio
+  cmd: string, args?: ReadonlyArray<string>, options?: SpawnOptionsWithoutStdio,
+  doExecCmd?: (cmd: ChildProcessWithoutNullStreams) => void
 ) => new Promise<number>(resolve => {
   if (process.platform === 'win32') {
     cmd += '.cmd'
@@ -11,9 +12,7 @@ export const doCommand = (
     `> ${cmd} ${args.join(' ')}`
   )
   const execCmd = spawn(cmd, args, options)
-  execCmd.on('message', (data) => {
-    console.log(data.toString())
-  })
+  doExecCmd(execCmd)
   execCmd.stdout.pipe(process.stdout)
   execCmd.stderr.pipe(process.stderr)
   execCmd.on('exit', code => {
