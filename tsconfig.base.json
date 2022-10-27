@@ -17,7 +17,7 @@
     "paths": {
       "@koishi-bots/*": [ "bots/*/src" ],
       "@koishi-kits/*": [ "packages/*/src" ],
-      "koishi-plugin-*": [ "plugins/plugin-*/src" ]
+      "koishi-plugin-*": [ "plugins/*/src" ]
     },
     "types": [ "node", "mocha" ],
     "lib": [
