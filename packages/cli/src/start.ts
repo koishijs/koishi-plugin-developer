@@ -2,7 +2,7 @@ import type { Command } from 'commander'
 import chokidar from 'chokidar'
 import fs from 'fs'
 import path from 'path'
-import { ChildProcessWithoutNullStreams } from 'child_process'
+import { ChildProcessWithoutNullStreams, SendHandle } from 'child_process'
 import { doCommand } from './utils'
 import type { Protocol } from '../lib/protocol'
 
@@ -11,28 +11,22 @@ export interface StartOptions {
   dev: boolean
 }
 
-const runBot = async (
-  botName: string, options?: StartOptions
-) => {
-  await doCommand('ts-node', [
-    '-r', 'dotenv/config',
-    ...(options.dev
-      ? ['-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js')]
-      : []),
-    'index.ts',
-  ], {
-    cwd: `./bots/${ botName }`,
-    // @ts-ignore
-    stdio: [null, null, null, 'ipc'],
-  }, cmd => Processes.attach(botName, cmd, options.dev))
-}
+type OnMessage = (msg: Protocol.UpDispatcher[0], handle: SendHandle) => void
 
 namespace Processes {
-  let cmd: ChildProcessWithoutNullStreams | null = null
   let fsWatcher: chokidar.FSWatcher | null = null
   const resolverDirMap = new Map<string, string>()
 
+  const bots = new Map<string, {
+    cmd: ChildProcessWithoutNullStreams
+    onMessage: OnMessage
+  }>()
+
   const appendBot = (botName: string) => {
+    const { cmd } = bots.get(botName) ?? {}
+    if (!cmd)
+      throw new Error(`Bot ${ botName } is not running.`)
+
     const botDir = `bots/${botName}`
 
     if (fsWatcher === null) {
@@ -52,7 +46,7 @@ namespace Processes {
         if (resolvers.size === 0) {
           if (filePath.startsWith(botDir)) {
             cmd?.kill('SIGINT')
-            cmd = null
+            bots.delete(botName)
             resolverDirMap.clear()
             fsWatcher?.close()
               .then(() => {
@@ -65,14 +59,19 @@ namespace Processes {
       fsWatcher.add(botDir)
   }
 
+  export const clear = (botName: string) => {
+    const bot = bots.get(botName)
+    if (!bot)
+      throw new Error(`Bot ${ botName } is not running.`)
+    bots.delete(botName)
+    bot.cmd.removeListener('message', bot.onMessage)
+  }
+
   export const attach = (
-    botName: string, attachCmd: ChildProcessWithoutNullStreams,
+    botName: string, cmd: ChildProcessWithoutNullStreams,
     watch = false
   ) => {
-    watch && appendBot(botName)
-
-    cmd = attachCmd
-    cmd.on('message', (dispatch: Protocol.UpDispatcher[0]) => {
+    const onMessage: OnMessage = dispatch => {
       const data = dispatch.data
 
       switch (dispatch.type) {
@@ -83,11 +82,17 @@ namespace Processes {
           fsWatcher.add(resolverDirMap.get(data.resolver))
           break
       }
-    })
+    }
+    bots.set(botName, { cmd, onMessage })
+
+    watch && appendBot(botName)
+
+    cmd.on('message', onMessage)
   }
 
   export interface EventMap {
     restart: (botName: string) => void | Promise<void>
+    remove: (exitCode: number, bots: string[]) => void | Promise<void>
   }
   export const eventMap = new Map<string, Set<(...args: any[]) => void | Promise<void>>>()
   export const on = <T extends keyof EventMap>(type: T, cb: EventMap[T]) => {
@@ -101,6 +106,23 @@ namespace Processes {
   }
 }
 
+const runBot = (
+  botName: string, options?: StartOptions
+) => {
+  const args = [
+    '-r', 'dotenv/config',
+    ...(options.dev
+      ? ['-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js')]
+      : []),
+    'index.ts',
+  ]
+  return doCommand('ts-node', args, {
+    cwd: `./bots/${ botName }`,
+    // @ts-ignore
+    stdio: [null, null, null, 'ipc'],
+  }, cmd => Processes.attach(botName, cmd, options.dev))
+}
+
 export function apply(program: Command) {
   program
     .command('start <botName>')
@@ -112,8 +134,11 @@ export function apply(program: Command) {
       if (!bots.includes(botName))
         throw new Error('bot is not found.')
 
-      Processes.on('restart', botName => runBot(botName, options))
+      Processes.on('restart', botName => {
+        runBot(botName, options)
+      })
 
       await runBot(botName, options)
+      Processes.clear(botName)
     })
 }
