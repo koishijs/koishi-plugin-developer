@@ -14,45 +14,54 @@ export interface StartOptions {
 type OnMessage = (msg: Protocol.UpDispatcher[0], handle: SendHandle) => void
 
 namespace Processes {
-  let fsWatcher: chokidar.FSWatcher | null = null
-  const resolverDirMap = new Map<string, string>()
-
-  const bots = new Map<string, {
+  type BotName = string
+  interface BotRelative {
     cmd: ChildProcessWithoutNullStreams
+    resolvers: Set<string>
     onMessage: OnMessage
-  }>()
+  }
+
+  let fsWatcher: chokidar.FSWatcher | null = null
+
+  const bots = new Map<BotName, BotRelative>()
+  const resolverFilesMap = new Map<string, string[]>()
 
   const appendBot = (botName: string) => {
-    const { cmd } = bots.get(botName) ?? {}
-    if (!cmd)
-      throw new Error(`Bot ${ botName } is not running.`)
-
     const botDir = `bots/${botName}`
 
     if (fsWatcher === null) {
       fsWatcher = chokidar.watch(botDir)
       fsWatcher.on('change', filePath => {
+        const cacheBots = new Map(bots)
+        cacheBots.forEach((bot, name) => {
+          const botDir = `bots/${name}`
+          if (filePath.startsWith(botDir)) {
+            bot.cmd?.kill('SIGINT')
+            emit('restart', name)
+          }
+        })
+        // 通过 file 找 resolver
         const resolvers = new Set<string>()
-        resolverDirMap.forEach((dir, resolver) => {
-          if (filePath.startsWith(dir)) {
+        new Map(resolverFilesMap).forEach((files, resolver) => {
+          if (files.includes(filePath)) {
             resolvers.add(resolver)
           }
         })
-        resolvers.forEach(resolver => {
-          cmd?.send({ type: 'plugin:reload', data: resolver }, err => {
-            err && console.error(err)
+        // 通过 resolver 找 bot
+        const resolverBotMap = new Map<string, BotRelative>()
+        cacheBots.forEach(bot => {
+          resolvers.forEach(resolver => {
+            if (bot.resolvers.has(resolver)) {
+              resolverBotMap.set(resolver, bot)
+            }
           })
         })
-        if (resolvers.size === 0) {
-          if (filePath.startsWith(botDir)) {
-            cmd?.kill('SIGINT')
-            resolverDirMap.clear()
-            fsWatcher?.close()
-              .then(() => {
-                emit('restart', botName)
-              })
-          }
-        }
+        resolverBotMap.forEach((bot, resolver) => {
+          bot.cmd?.send(
+            { type: 'plugin:reload', data: resolver },
+            err => err && console.error(err)
+          )
+        })
       })
     } else {
       fsWatcher.add(botDir)
@@ -61,9 +70,23 @@ namespace Processes {
 
   export const clear = (botName: string) => {
     const bot = bots.get(botName)
-    if (!bot)
-      throw new Error(`Bot ${ botName } is not running.`)
+    if (!bot) return
+
     bots.delete(botName)
+    // 移除没有用的 `resolver`，但是如果其他的 bot 有使用则不移除
+    resolverFilesMap.forEach((files, resolver) => {
+      if (!bot.resolvers.has(resolver))
+        return
+      let isUse = false
+      bots.forEach(bot => {
+        if (bot.resolvers.has(resolver)) {
+          isUse = true
+        }
+      })
+      if (!isUse) {
+        resolverFilesMap.delete(resolver)
+      }
+    })
     bot.cmd.removeListener('message', bot.onMessage)
   }
 
@@ -78,12 +101,23 @@ namespace Processes {
         case 'plugin:apply':
           if (!watch) break
 
-          resolverDirMap.set(data.resolver, path.dirname(data.resolver))
-          fsWatcher.add(resolverDirMap.get(data.resolver))
+          resolverFilesMap.set(data.resolver, [
+            path.dirname(data.resolver)
+          ])
+          /* eslint-disable no-case-declarations */
+          const bot = bots.get(botName)
+          if (bot) {
+            bot.resolvers.add(data.resolver)
+          }
+          /* eslint-enale no-case-declarations */
           break
       }
     }
-    bots.set(botName, { cmd, onMessage })
+    bots.set(botName, {
+      cmd,
+      resolvers: new Set(),
+      onMessage,
+    })
 
     watch && appendBot(botName)
 
@@ -113,7 +147,8 @@ namespace Processes {
     eventMap.get(type)?.delete(cb)
   }
   export const emit = <T extends keyof EventMap>(type: T, ...args: Parameters<EventMap[T]>) => {
-    eventMap.get(type)?.forEach(cb => cb(...args))
+    Array.from(eventMap.get(type).values())
+      .forEach(cb => cb(...args))
   }
 }
 
@@ -151,12 +186,12 @@ export function apply(program: Command) {
 
       async function run(botName: string) {
         if (options.dev) {
-          Processes.once('restart', async () => {
-            setTimeout(() => run(botName), 100)
+          Processes.once('restart', () => {
+            run(botName)
           })
         }
-        await runBot(botName, options)
         Processes.clear(botName)
+        await runBot(botName, options)
       }
 
       await run(botName)
