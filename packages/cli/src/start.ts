@@ -24,47 +24,52 @@ const runBot = async (
     cwd: `./bots/${ botName }`,
     // @ts-ignore
     stdio: [null, null, null, 'ipc'],
-  }, cmd => {
-    if (options.dev)
-      Processes.attach(botName, cmd)
-  })
+  }, cmd => Processes.attach(botName, cmd, options.dev))
 }
 
 namespace Processes {
   let cmd: ChildProcessWithoutNullStreams | null = null
   let fsWatcher: chokidar.FSWatcher | null = null
   const resolverDirMap = new Map<string, string>()
-  const initFSWatcher = (botName: string) => {
+
+  const appendBot = (botName: string) => {
     const botDir = `bots/${botName}`
 
-    fsWatcher = chokidar.watch(botDir)
-    fsWatcher.on('change', filePath => {
-      const resolvers = new Set<string>()
-      resolverDirMap.forEach((dir, resolver) => {
-        if (filePath.startsWith(dir)) {
-          resolvers.add(resolver)
-        }
-      })
-      resolvers.forEach(resolver => {
-        cmd?.send({ type: 'plugin:reload', data: resolver }, err => {
-          err && console.error(err)
+    if (fsWatcher === null) {
+      fsWatcher = chokidar.watch(botDir)
+      fsWatcher.on('change', filePath => {
+        const resolvers = new Set<string>()
+        resolverDirMap.forEach((dir, resolver) => {
+          if (filePath.startsWith(dir)) {
+            resolvers.add(resolver)
+          }
         })
-      })
-      if (resolvers.size === 0) {
-        if (filePath.startsWith(botDir)) {
-          cmd?.kill('SIGINT')
-          cmd = null
-          resolverDirMap.clear()
-          fsWatcher?.close()
-            .then(() => {
-              emit('restart', botName)
-            })
+        resolvers.forEach(resolver => {
+          cmd?.send({ type: 'plugin:reload', data: resolver }, err => {
+            err && console.error(err)
+          })
+        })
+        if (resolvers.size === 0) {
+          if (filePath.startsWith(botDir)) {
+            cmd?.kill('SIGINT')
+            cmd = null
+            resolverDirMap.clear()
+            fsWatcher?.close()
+              .then(() => {
+                emit('restart', botName)
+              })
+          }
         }
-      }
-    })
+      })
+    } else
+      fsWatcher.add(botDir)
   }
-  export const attach = (botName: string, attachCmd: ChildProcessWithoutNullStreams) => {
-    initFSWatcher(botName)
+
+  export const attach = (
+    botName: string, attachCmd: ChildProcessWithoutNullStreams,
+    watch = false
+  ) => {
+    watch && appendBot(botName)
 
     cmd = attachCmd
     cmd.on('message', (dispatch: Protocol.UpDispatcher[0]) => {
@@ -72,16 +77,18 @@ namespace Processes {
 
       switch (dispatch.type) {
         case 'plugin:apply':
+          if (!watch) break
+
           resolverDirMap.set(data.resolver, path.dirname(data.resolver))
           fsWatcher.add(resolverDirMap.get(data.resolver))
           break
       }
     })
   }
+
   export interface EventMap {
     restart: (botName: string) => void | Promise<void>
   }
-
   export const eventMap = new Map<string, Set<(...args: any[]) => void | Promise<void>>>()
   export const on = <T extends keyof EventMap>(type: T, cb: EventMap[T]) => {
     if (!eventMap.has(type)) {

@@ -5,6 +5,7 @@ export namespace Protocol {
       config: Record<string, any>
       resolver: string
     }, null]
+    'exit': [null, null]
   }
   export type UpTypes = keyof UpDispatcherMap
   export type UpDispatcher<T extends UpTypes = UpTypes> = [{
