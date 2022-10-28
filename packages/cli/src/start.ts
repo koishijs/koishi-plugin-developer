@@ -46,7 +46,6 @@ namespace Processes {
         if (resolvers.size === 0) {
           if (filePath.startsWith(botDir)) {
             cmd?.kill('SIGINT')
-            bots.delete(botName)
             resolverDirMap.clear()
             fsWatcher?.close()
               .then(() => {
@@ -55,8 +54,9 @@ namespace Processes {
           }
         }
       })
-    } else
+    } else {
       fsWatcher.add(botDir)
+    }
   }
 
   export const clear = (botName: string) => {
@@ -101,6 +101,17 @@ namespace Processes {
     }
     eventMap.get(type)?.add(cb)
   }
+  export const once = <T extends keyof EventMap>(type: T, cb: EventMap[T]) => {
+    const onceCb = (...args: any[]) => {
+      // @ts-ignore
+      cb(...args)
+      off(type, onceCb)
+    }
+    on(type, onceCb)
+  }
+  export const off = <T extends keyof EventMap>(type: T, cb: EventMap[T]) => {
+    eventMap.get(type)?.delete(cb)
+  }
   export const emit = <T extends keyof EventMap>(type: T, ...args: Parameters<EventMap[T]>) => {
     eventMap.get(type)?.forEach(cb => cb(...args))
   }
@@ -112,7 +123,11 @@ const runBot = (
   const args = [
     '-r', 'dotenv/config',
     ...(options.dev
-      ? ['-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js')]
+      ? [
+        '-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js'),
+        // enable sourcemap
+        '--compilerOptions', '{"sourceMap":true}',
+      ]
       : []),
     'index.ts',
   ]
@@ -134,11 +149,16 @@ export function apply(program: Command) {
       if (!bots.includes(botName))
         throw new Error('bot is not found.')
 
-      Processes.on('restart', botName => {
-        runBot(botName, options)
-      })
+      async function run(botName: string) {
+        if (options.dev) {
+          Processes.once('restart', async () => {
+            setTimeout(() => run(botName), 100)
+          })
+        }
+        await runBot(botName, options)
+        Processes.clear(botName)
+      }
 
-      await runBot(botName, options)
-      Processes.clear(botName)
+      await run(botName)
     })
 }
