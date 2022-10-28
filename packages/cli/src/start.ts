@@ -6,12 +6,26 @@ import { ChildProcessWithoutNullStreams } from 'child_process'
 import { doCommand } from './utils'
 import type { Protocol } from '../lib/protocol'
 
+const runBot = async (botName: string) => {
+  await doCommand('ts-node', [
+    '-r', 'dotenv/config',
+    '-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js'),
+    'index.ts',
+  ], {
+    cwd: `./bots/${ botName }`,
+    // @ts-ignore
+    stdio: [null, null, null, 'ipc'],
+  }, cmd => Processes.attach(botName, cmd))
+}
+
 namespace Processes {
   let cmd: ChildProcessWithoutNullStreams | null = null
   let fsWatcher: chokidar.FSWatcher | null = null
   const resolverDirMap = new Map<string, string>()
   const initFSWatcher = (botName: string) => {
-    fsWatcher = chokidar.watch(`./bots/${botName}`)
+    const botDir = `bots/${botName}`
+
+    fsWatcher = chokidar.watch(botDir)
     fsWatcher.on('change', filePath => {
       const resolvers = new Set<string>()
       resolverDirMap.forEach((dir, resolver) => {
@@ -24,6 +38,17 @@ namespace Processes {
           err && console.error(err)
         })
       })
+      if (resolvers.size === 0) {
+        if (filePath.startsWith(botDir)) {
+          cmd?.kill('SIGINT')
+          cmd = null
+          resolverDirMap.clear()
+          fsWatcher?.close()
+            .then(() => {
+              emit('restart', botName)
+            })
+        }
+      }
     })
   }
   export const attach = (botName: string, attachCmd: ChildProcessWithoutNullStreams) => {
@@ -41,6 +66,25 @@ namespace Processes {
       }
     })
   }
+  export interface EventMap {
+    restart: (botName: string) => void | Promise<void>
+  }
+
+  export const eventMap = new Map<string, Set<(...args: any[]) => void | Promise<void>>>()
+  export const on = <T extends keyof EventMap>(type: T, cb: EventMap[T]) => {
+    if (!eventMap.has(type)) {
+      eventMap.set(type, new Set())
+    }
+    eventMap.get(type)?.add(cb)
+  }
+  export const emit = <T extends keyof EventMap>(type: T, ...args: Parameters<EventMap[T]>) => {
+    eventMap.get(type)?.forEach(cb => cb(...args))
+  }
+
+  on('restart', async (botName) => {
+    await runBot(botName)
+    console.log('restart')
+  })
 }
 
 export function apply(program: Command) {
@@ -56,20 +100,7 @@ export function apply(program: Command) {
       const bots = fs.readdirSync('./bots')
       if (!bots.includes(botName))
         throw new Error('bot is not found.')
-      const opts = {
-        cwd: `./bots/${ botName }`
-      }
-      // * [x] hack plugin method
-      // * [x] watch plugins directories change, reload target plugin
-      // * [ ] watch bot directory change, reload bot
-      await doCommand('ts-node', [
-        '-r', 'dotenv/config',
-        '-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js'),
-        'index.ts',
-      ], {
-        ...opts,
-        // @ts-ignore
-        stdio: [null, null, null, 'ipc'],
-      }, cmd => Processes.attach(botName, cmd))
+
+      await runBot(botName)
     })
 }
