@@ -6,16 +6,28 @@ import { ChildProcessWithoutNullStreams } from 'child_process'
 import { doCommand } from './utils'
 import type { Protocol } from '../lib/protocol'
 
-const runBot = async (botName: string) => {
+export interface StartOptions {
+  port: string
+  dev: boolean
+}
+
+const runBot = async (
+  botName: string, options?: StartOptions
+) => {
   await doCommand('ts-node', [
     '-r', 'dotenv/config',
-    '-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js'),
+    ...(options.dev
+      ? ['-r', path.resolve(__dirname, '../lib/koishi-hot-reload.js')]
+      : []),
     'index.ts',
   ], {
     cwd: `./bots/${ botName }`,
     // @ts-ignore
     stdio: [null, null, null, 'ipc'],
-  }, cmd => Processes.attach(botName, cmd))
+  }, cmd => {
+    if (options.dev)
+      Processes.attach(botName, cmd)
+  })
 }
 
 namespace Processes {
@@ -80,11 +92,6 @@ namespace Processes {
   export const emit = <T extends keyof EventMap>(type: T, ...args: Parameters<EventMap[T]>) => {
     eventMap.get(type)?.forEach(cb => cb(...args))
   }
-
-  on('restart', async (botName) => {
-    await runBot(botName)
-    console.log('restart')
-  })
 }
 
 export function apply(program: Command) {
@@ -92,15 +99,14 @@ export function apply(program: Command) {
     .command('start <botName>')
     .description('start bot by name.')
     .option('-p, --port <port>', 'port to listen', '8080')
-    .option('-d, --dev', 'dev mode')
-    .action(async (botName: string, options?: {
-      port: string
-      dev: boolean
-    }) => {
+    .option('-d, --dev', 'dev mode', false)
+    .action(async (botName: string, options?: StartOptions) => {
       const bots = fs.readdirSync('./bots')
       if (!bots.includes(botName))
         throw new Error('bot is not found.')
 
-      await runBot(botName)
+      Processes.on('restart', botName => runBot(botName, options))
+
+      await runBot(botName, options)
     })
 }
