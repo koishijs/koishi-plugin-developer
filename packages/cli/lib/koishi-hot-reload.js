@@ -77,7 +77,3 @@ process.on(
       })
     }
   })
-
-process.on('exit', () => {
-  process.send?.(dispatch('exit', null))
-})
