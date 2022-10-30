@@ -12,8 +12,14 @@ export function apply(program: Command) {
       `platforms to build, can be: ${allPlatforms.join(', ')} or all`,
       'all'
     )
+    .option(
+      '-d, --dts',
+      'generate declaration files',
+      false
+    )
     .action(async (type: string, name?: string, options?: {
       platforms: string
+      dts: boolean
     }) => {
       if (!['plugin', 'bot'].includes(type))
         throw new Error('type is not found.')
@@ -34,9 +40,9 @@ export function apply(program: Command) {
           '--bundleConfigAsCjs',
           '--configPlugin', path.resolve('./rollup-tsnode-plugin.js'),
         ], opts)),
-        doCommand('tsc', [
+        options.dts ? doCommand('tsc', [
           '--project', 'tsconfig.build.json',
-        ], opts)
+        ], opts) : Promise.resolve(),
       ])
     })
 }
